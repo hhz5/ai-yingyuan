@@ -1,0 +1,219 @@
+    S.myAgents=S.myAgents.filter(x=>x.id!==a.id); S.used=S.used.filter(x=>x!==a.id); saveState(); renderTab(); toast('已删除');
+  }
+  function renderTab(){
+    tabBar.innerHTML='';
+    CATS.forEach(c=>{ tabBar.appendChild(h('button',{class:'tab'+(curTab===c?' active':''),text:c,onClick:()=>{curTab=c;renderTab();}})); });
+    grid.innerHTML='';
+    let list=[];
+    if(curTab==='全部'){
+      const mine=[...S.myAgents].sort((a,b)=>b.ut-a.ut);
+      const others=MARKET.filter(m=>!S.myAgents.some(x=>x.name===m.name));
+      list=[...mine.map(a=>({a,mine:true})),...others.map(a=>({a,mine:false}))];
+    }else if(curTab==='我的智体'){
+      list=[...S.myAgents].sort((a,b)=>b.ut-a.ut).map(a=>({a,mine:true}));
+    }else{
+      // 分类页：内置市场智体 + 我发布到公共且归类相同的智体
+      const minePub=S.myAgents.filter(a=>a.status==='published'&&a.visibility==='public'&&a.category===curTab).map(a=>({a,mine:true}));
+      const built=MARKET.filter(m=>m.cat===curTab&&!S.myAgents.some(x=>x.name===m.name)).map(a=>({a,mine:false}));
+      list=[...minePub,...built];
+    }
+    if(!list.length) grid.appendChild(h('div',{class:'empty-state',style:{gridColumn:'1/-1'},html:ICON.robot+'<p>还没有智体，点击右上角“创建智体”开始</p>'}));
+    list.forEach(x=>grid.appendChild(agentCard(x.a,x.mine)));
+  }
+  const discoverSec=h('section',{},[
+    h('div',{class:'section-head'},[h('h2',{text:'发现更多'})]),
+    tabBar,grid
+  ]);
+  // ---- 公文范文（展示前 4 篇，全部进入范文库） ----
+  const tplSec=h('section',{},[
+    h('div',{class:'section-head'},[h('h2',{text:'公文范文'}),h('button',{class:'btn btn-sm',html:ICON.arrowR+' 进入范文库',onClick:()=>go('#/templates')})]),
+    h('div',{class:'docs-list'},TEMPLATES.slice(0,4).map(t=>h('div',{class:'card doc-tpl',onClick:()=>go('#/templates')},[
+      h('span',{class:'fi',html:ICON.doc}),
+      h('div',{},[h('h5',{text:t.name}),h('p',{text:t.intro})])
+    ])))
+  ]);
+  view.appendChild(h('div',{class:'page'},[recoSec,discoverSec,tplSec]));
+  renderTab();
+};
+
+/* ---------- 创建 / 编辑智体弹窗 ---------- */
+function genLogoDataURL(ch, colors){
+  const cv=document.createElement('canvas');cv.width=cv.height=120;
+  const ctx=cv.getContext('2d');
+  const g=ctx.createLinearGradient(0,0,120,120);g.addColorStop(0,colors[0]);g.addColorStop(1,colors[1]);
+  ctx.fillStyle=g;ctx.beginPath();ctx.roundRect(0,0,120,120,26);ctx.fill();
+  ctx.fillStyle='#fff';ctx.font='700 58px "Noto Sans SC",sans-serif';ctx.textAlign='center';ctx.textBaseline='middle';ctx.fillText(ch,60,66);
+  return cv.toDataURL('image/png');
+}
+function openCreateAgent(existing){
+  const isEdit=!!existing;
+  let logos=[]; let selected=0;
+  const nameInput=h('input',{class:'input',maxlength:50,placeholder:'给智体起一个独一无二的名字',value:existing?existing.name:''});
+  const nameCount=h('span',{class:'char-count',text:(existing?existing.name.length:0)+'/50'});
+  nameInput.addEventListener('input',()=>nameCount.textContent=nameInput.value.length+'/50');
+  const introInput=h('textarea',{class:'textarea',rows:4,maxlength:2000,placeholder:'介绍智体的功能，将会展示给智体的用户',text:existing?existing.intro:''});
+  const introCount=h('span',{class:'char-count',text:(existing?existing.intro.length:0)+'/2000'});
+  introInput.addEventListener('input',()=>introCount.textContent=introInput.value.length+'/2000');
+  const logoList=h('div',{class:'logo-gen-list'});
+  if(existing&&existing.logoData){ logos=[{data:existing.logoData,color:existing.logoColor}]; }
+  else { const c=LOGO_COLORS[Math.floor(Math.random()*LOGO_COLORS.length)]; logos=[{data:genLogoDataURL((existing?existing.name:'智').charAt(0)||'智',c),color:c}]; }
+  function renderLogos(){
+    logoList.innerHTML='';
+    logos.forEach((lg,i)=>{
+      const im=h('img',{src:lg.data,class:'logo-opt'+(i===selected?' selected':''),onClick:()=>{selected=i;renderLogos();},style:{width:'52px',height:'52px',borderRadius:'12px'}});
+      logoList.appendChild(im);
+    });
+  }
+  const genBtn=h('button',{class:'btn btn-sm',title:'输入名称和介绍后，点击自动生成头像',html:ICON.spark+' 生成',onClick:()=>{
+    if(!nameInput.value.trim()){toast('请先输入智体名称','warn');return;}
+    if(logos.length>=5){toast('最多生成 5 张图标','warn');return;}
+    genBtn.disabled=true; genBtn.innerHTML='<span class="spinner"></span> 生成中';
+    setTimeout(()=>{
+      const c=LOGO_COLORS[Math.floor(Math.random()*LOGO_COLORS.length)];
+      logos.push({data:genLogoDataURL(nameInput.value.trim().charAt(0),c),color:c});
+      selected=logos.length-1; renderLogos();
+      genBtn.disabled=false; genBtn.innerHTML=ICON.spark+' 生成';
+    },700);
+  }});
+  renderLogos();
+  const okBtn=h('button',{class:'btn btn-primary',text:isEdit?'保存修改':'确定创建',onClick:()=>{
+    if(!nameInput.value.trim()){toast('请输入智体名称','warn');return;}
+    if(!logos[selected]){toast('请生成或选择图标','warn');return;}
+    const lg=logos[selected];
+    if(isEdit){
+      Object.assign(existing,{name:nameInput.value.trim(),intro:introInput.value.trim(),logoColor:lg.color,logoData:lg.data,ut:now()});
+      saveState();closeModal();renderSidebar();toast('智体信息已更新');
+      if(parseRoute().path==='/agent-edit') Views.AgentEdit({id:existing.id}); else router();
+    }else{
+      const a={id:uid(),name:nameInput.value.trim(),intro:introInput.value.trim(),persona:'',opening:'',presets:['','',''],logoColor:lg.color,logoData:lg.data,status:'draft',publishNote:'',visibility:'private',category:'党政媒体',ct:now(),ut:now()};
+      S.myAgents.unshift(a); saveState(); closeModal(); renderSidebar(); toast('智体已创建');
+      go('#/agent-edit?id='+a.id);
+    }
+  }});
+  openModal({width:560,title:isEdit?'编辑智体':'创建智体',body:[
+    h('div',{class:'field'},[h('div',{class:'field-label'},['智体名称 ',h('span',{class:'req',text:'*'})]),nameInput,nameCount]),
+    h('div',{class:'field'},[h('div',{class:'field-label',text:'功能介绍'}),introInput,introCount]),
+    h('div',{class:'field'},[h('div',{class:'field-label'},['图标 ',h('span',{class:'req',text:'*'}),' ',genBtn]),
+      h('div',{class:'field-hint',text:'点击“生成”由 AI 分析名称与介绍生成图标，最多可生成 5 张，新生成的自动选中'}),logoList])
+  ],footer:[h('button',{class:'btn',text:'取消',onClick:closeModal}),okBtn]});
+}
+
+/* ============================================================
+   八、编辑智体（编排 + 预览调试）
+   ============================================================ */
+Views.AgentEdit=function(params){
+  const a=S.myAgents.find(x=>x.id===params.id);
+  if(!a){toast('智体不存在','error');go('#/center');return;}
+  let saveTimer;
+  const pubBtn=h('button',{class:'btn btn-primary btn-sm',text:'发布',onClick:()=>go('#/publish?id='+a.id)});
+  setTopbar('编辑智体',a.name,[
+    h('span',{class:'tag '+(a.status==='published'?'tag-green':'tag-gray'),text:a.status==='published'?'已发布':'草稿'}),
+    h('span',{class:'fs12 c3',id:'saveTime',text:'自动保存于 '+fmtTime(a.ut)}),pubBtn]);
+  const view=$('#view');view.innerHTML='';
+  // 左：编排
+  const personaTa=h('textarea',{class:'textarea',rows:10,placeholder:'使用自然语言填写智体的人物设定、功能和工作流程',text:a.persona});
+  const openingTa=h('textarea',{class:'textarea',rows:3,placeholder:'在此处填写智体的开场白；点击自动生成按钮，可以自动生成开场白',text:a.opening});
+  const presetBox=h('div',{});
+  function renderPresets(){
+    presetBox.innerHTML='';
+    a.presets.forEach((q,i)=>{
+      const inp=h('input',{class:'input',value:q,placeholder:'预置问题 '+(i+1),onInput:e=>{a.presets[i]=e.target.value;autoSave();}});
+      const row=h('div',{class:'preset-q-row'},[inp, a.presets.length>1?h('button',{class:'icon-btn',title:'删除',html:ICON.trash,onClick:()=>{a.presets.splice(i,1);renderPresets();autoSave();}}):null]);
+      presetBox.appendChild(row);
+    });
+    presetBox.appendChild(h('button',{class:'btn btn-sm',html:ICON.plus+' 添加预置问题',onClick:()=>{a.presets.push('');renderPresets();}}));
+  }
+  function autoSave(){ clearTimeout(saveTimer); saveTimer=setTimeout(()=>{a.ut=now();saveState();const t=$('#saveTime');if(t)t.textContent='已自动保存 '+fmtTime(a.ut);},700); }
+  personaTa.addEventListener('input',e=>{a.persona=e.target.value;autoSave();});
+  openingTa.addEventListener('input',e=>{a.opening=e.target.value;autoSave();});
+  // 优化按钮
+  const optBtn=h('button',{class:'btn btn-sm',title:'自动优化你的提示。',html:ICON.spark+' 优化',onClick:()=>openOptimize(a,personaTa)});
+  // 自动生成
+  const autoBtn=h('button',{class:'btn btn-sm',title:'自动生成',html:ICON.spark+' 自动生成',onClick:()=>{
+    if(!a.persona.trim()){toast('请先填写人设与回复逻辑','warn');return;}
+    autoBtn.disabled=true;autoBtn.innerHTML='<span class="spinner"></span> 生成中';
+    setTimeout(()=>{const r=AI.genOpening(a.persona);a.opening=r.opening;a.presets=r.presets;openingTa.value=r.opening;renderPresets();autoSave();autoBtn.disabled=false;autoBtn.innerHTML=ICON.spark+' 自动生成';toast('已根据人设自动生成开场白与预置问题');},800);
+  }});
+  const left=h('div',{class:'ae-left'},[
+    h('div',{class:'ae-head'},[
+      a.logoData?h('img',{src:a.logoData,style:{width:'42px',height:'42px',borderRadius:'11px'}}):h('span',{class:'agent-logo',style:{background:`linear-gradient(135deg,${a.logoColor[0]},${a.logoColor[1]})`},text:a.name.charAt(0)}),
+      h('div',{style:{flex:1}},[h('div',{class:'ae-title',text:a.name}),h('div',{class:'ae-meta',text:a.intro})]),
+      h('button',{class:'btn btn-sm',html:ICON.edit+' 编辑',onClick:()=>openCreateAgent(a)})
+    ]),
+    h('div',{class:'card',style:{padding:'18px',marginBottom:'16px'}}},[
+      h('div',{class:'jcb flex aic mb12'},[h('div',{class:'fw600',text:'人设与回复逻辑 '},[h('span',{class:'req',text:'*'})]),optBtn]),
+      personaTa
+    ]),
+    h('div',{class:'card',style:{padding:'18px'}}},[
+      h('div',{class:'jcb flex aic mb12'},[h('div',{class:'fw600',text:'高级设置'}),autoBtn]),
+      h('div',{class:'field'},[h('div',{class:'field-label',text:'开场白文案'}),openingTa]),
+      h('div',{class:'field'},[h('div',{class:'field-label'},['预置问题 ',h('i',{class:'opt-tip',title:'填写超过3条时，将随机显示3条问题建议。',text:'i'})]),presetBox])
+    ])
+  ]);
+  // 右：预览调试
+  const pvChat=h('div',{class:'pv-chat'});
+  const pvPresets=h('div',{class:'pv-presets'});
+  const pvInput=h('input',{placeholder:'输入调试内容，回车发送',onKeydown:e=>{if(e.key==='Enter'&&e.target.value.trim()){sendPv(e.target.value);e.target.value='';}}});
+  function botBubble(t){return h('div',{class:'pv-bubble bot',text:t});}
+  function meBubble(t){return h('div',{class:'pv-bubble me',text:t});}
+  function renderPreview(){
+    pvChat.innerHTML='';
+    pvChat.appendChild(botBubble(a.opening||'（尚未设置开场白，填写后将在此预览）'));
+    pvPresets.innerHTML='';
+    const qs=a.presets.filter(Boolean); const show=qs.length>3?shuffle(qs).slice(0,3):qs;
+    show.forEach(q=>pvPresets.appendChild(h('button',{text:q,onClick:()=>sendPv(q)})));
+  }
+  function shuffle(arr){const a=arr.slice();for(let i=a.length-1;i>0;i--){const j=Math.floor(Math.random()*(i+1));[a[i],a[j]]=[a[j],a[i]];}return a;}
+  function sendPv(text){
+    pvChat.appendChild(meBubble(text));
+    const wait=botBubble(''); const sp=h('span',{class:'dots-loading',html:'<i></i><i></i><i></i>'});wait.appendChild(sp);pvChat.appendChild(wait);pvChat.scrollTop=pvChat.scrollHeight;
+    setTimeout(()=>{wait.innerHTML='';const pvSc=makeAutoScroll(pvChat);const ctrl=streamText(AI.chat(text,a),(t,done)=>{wait.textContent=t;pvSc(done);},{} );ctrl.start();},500);
+  }
+  const clearBtn=h('button',{class:'btn-text fs12',html:ICON.clear+' 清除',onClick:renderPreview});
+  const right=h('div',{class:'ae-right'},[
+    h('div',{style:{padding:'14px 16px 0',display:'flex',alignItems:'center',gap:'8px'}},[h('span',{class:'fw600',text:'预览与调试'}),h('span',{style:{marginLeft:'auto'}},clearBtn)]),
+    h('div',{class:'preview-phone'},[
+      h('div',{class:'pv-head'},[
+        a.logoData?h('img',{src:a.logoData,style:{width:'36px',height:'36px',borderRadius:'9px'}}):h('span',{class:'agent-logo',style:{width:'36px',height:'36px',borderRadius:'9px',fontSize:'15px',background:`linear-gradient(135deg,${a.logoColor[0]},${a.logoColor[1]})`},text:a.name.charAt(0)}),
+        h('div',{class:'fw600',text:a.name})
+      ]),
+      pvChat,pvPresets,
+      h('div',{class:'pv-input'},[pvInput,h('button',{class:'send-btn',html:ICON.send,onClick:()=>{if(pvInput.value.trim()){sendPv(pvInput.value);pvInput.value='';}}})])
+    ])
+  ]);
+  renderPresets();renderPreview();
+  view.appendChild(h('div',{class:'agent-edit'},[left,right]));
+};
+
+/* ---------- 提示词优化弹窗 ---------- */
+function openOptimize(agent, personaTa){
+  if(!agent.persona.trim()){toast('请先填写人设与回复逻辑','warn');return;}
+  const ta=h('textarea',{class:'textarea',rows:16,readonly:false,style:{fontFamily:'monospace',fontSize:'12.5px',lineHeight:1.7}});
+  const useBtn=h('button',{class:'btn btn-primary',disabled:true,text:'使用'});
+  const retry=h('button',{class:'btn btn-sm',html:ICON.refresh+' 重试'});
+  let ctrl=null;
+  function run(){
+    useBtn.disabled=true;useBtn.classList.add('btn-disabled');ta.value='';
+    const full=AI.optimize(agent.persona);
+    const opSc=makeAutoScroll(ta);
+    ctrl=streamText(full,(t,done)=>{ta.value=t;opSc(done);},{} );
+    ctrl.start().then(()=>{useBtn.disabled=false;useBtn.classList.remove('btn-disabled');});
+  }
+  retry.onclick=run;
+  useBtn.onclick=()=>{agent.persona=ta.value;personaTa.value=ta.value;saveState();closeModal();toast('已应用优化后的提示词');};
+  openModal({width:680,title:'提示词优化',body:[
+    h('div',{style:{display:'flex',justifyContent:'flex-end',marginBottom:'8px'}},[retry]),ta
+  ],footer:[h('button',{class:'btn',text:'取消',onClick:closeModal}),useBtn]});
+  run();
+}
+
+/* ============================================================
+   九、发布智体
+   ============================================================ */
+Views.Publish=function(params){
+  const a=S.myAgents.find(x=>x.id===params.id);
+  if(!a){go('#/center');return;}
+  setTopbar('发布智体',a.name,[h('button',{class:'btn btn-sm',html:ICON.chevL+' 返回编辑',onClick:()=>go('#/agent-edit?id='+a.id)})]);
+  const view=$('#view');view.innerHTML='';
+  const noteTa=h('textarea',{class:'textarea',rows:5,maxlength:2000,placeholder:'输入版本记录',text:a.publishNote||''});
+  const cnt=h('span',{class:'char-count',text:(a.publishNote||'').length+'/2000'});
