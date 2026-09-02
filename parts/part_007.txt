@@ -1,0 +1,152 @@
+      {id:'my1',name:'学习汇报智能助手',intro:'辅助撰写各类学习教育情况汇报与心得体会。',persona:'你是一位机关党建工作专家，擅长辅导党员干部撰写理论学习汇报与心得体会，语言规范、认识深刻。',opening:'您好，我是学习汇报智能助手，可以帮您撰写学习汇报、心得体会。请告诉我学习主题与大致要求。',presets:['帮我写一篇二十大精神学习汇报','学习体会一般分几个部分','如何让认识部分更深刻'],logoColor:['#3f9d6b','#2f8356'],status:'published',publishNote:'v1.0 首次发布',visibility:'private',category:'党政媒体',ct:Date.now()-86400000*8,ut:Date.now()-86400000*2},
+      {id:'my2',name:'test',intro:'用于调试的测试智体。',persona:'你是一个测试助手。',opening:'你好，这是一个测试中的智体。',presets:['测试问题1','测试问题2','测试问题3'],logoColor:['#4a7bd0','#345fb0'],status:'draft',publishNote:'',visibility:'private',category:'党政媒体',ct:Date.now()-86400000*3,ut:Date.now()-86400000}
+    ],
+    used:['rec-writing','m2'],          // 使用过的智体 id（按最近使用排序，最新在前）
+    writingHistory:[
+      {id:'h1',title:'关于我县农民工返岗复工情况工作开展进度的答复',text:'今年以来，我县认真贯彻落实上级关于稳就业工作的决策部署，把农民工返岗复工作为重要民生工程抓紧抓实。现将有关情况答复如下：\n一、基本情况\n截至目前，全县累计实现农村劳动力转移就业若干万人，返岗率达到较高水平，通过专列专车、点对点输送等方式，有序组织农民工返岗。\n二、主要做法\n一是强化组织领导，建立工作专班；二是精准摸排底数，建立劳动力台账；三是拓宽就业渠道，举办线上线下招聘活动。\n三、存在问题\n部分劳动者技能与岗位需求不匹配，结构性就业矛盾仍然存在。\n四、下步工作\n持续开展职业技能培训，强化劳务协作，确保就业大局稳定。',ct:Date.now()-86400000-3600000*3},
+      {id:'h2',title:'科技局年终工作汇报',text:'一年来，科技局在县委、县政府的坚强领导下，深入实施创新驱动发展战略，各项工作取得新成效。高新技术企业数量稳步增长，研发投入强度持续提升，创新平台建设实现突破。',ct:Date.now()-86400000*2}
+    ],
+    docs:clone(SEED_DOCS),
+    draft:'',
+    aiDocHistory:[], // AI 文档分析历史 {id,title,chars,ct,text,result}
+    chatHistory:{}   // 各问答智体的会话 {agentId:{convs,activeId}}
+  };
+}
+let S;
+function saveState(){ try{localStorage.setItem(LS_KEY,JSON.stringify(S));}catch(e){} }
+function loadState(){
+  try{ const raw=localStorage.getItem(LS_KEY); if(raw){ S=JSON.parse(raw);
+    // 补齐顶层字段
+    const d=defaultState(); for(const k in d){ if(!(k in S)) S[k]=d[k]; }
+    // 迁移：内置种子文档同步最新状态与解析文本（保留用户的启用开关）
+    if(Array.isArray(S.docs)) SEED_DOCS.forEach(sd=>{const ex=S.docs.find(x=>x.id===sd.id);if(ex){if(ex.rawText==null)ex.rawText=sd.rawText;if(['processing','fail'].includes(ex.status)&&sd.status==='success'){ex.status='success';ex.rawText=sd.rawText;} }});
+    return; } }catch(e){}
+  S=defaultState(); saveState();
+}
+function findAgent(id){
+  if(id==='general') return {id:'general',name:'通用',intro:'通用智能助手，有问必答。',persona:'你是小影AI通用助手，专业、耐心地回答用户的各类问题。',logoColor:['#7a5af0','#5e3fd6'],opening:'您好，我是通用助手，请问有什么可以帮您？',presets:[]};
+  return RECOMMEND.find(a=>a.id===id)||MARKET.find(a=>a.id===id)||S.myAgents.find(a=>a.id===id);
+}
+function touchUsed(id){
+  if(id==='general')return;
+  S.used=[id,...S.used.filter(x=>x!==id)].slice(0,12); saveState(); renderSidebar();
+}
+
+/* ============================================================
+   五、本地文本智能引擎（纯前端规则化，无需后端即可实际使用）
+   ============================================================ */
+const AI = {};
+const rnd = arr => arr[Math.floor(Math.random()*arr.length)];
+const pickN=(arr,n)=>{const a=arr.slice();const out=[];while(a.length&&out.length<n)out.push(a.splice(Math.floor(Math.random()*a.length),1)[0]);return out;};
+/* ---------- 中文文本基础工具 ---------- */
+function splitSentences(text){
+  return (text||'').replace(/\r/g,'').split(/(?<=[。！？；!?;\n])/).map(s=>s.trim()).filter(Boolean);
+}
+const STOP_WORDS=new Set(['我们','你们','他们','它们','这个','那个','这些','那些','一个','一些','一种','以及','对于','关于','根据','按照','通过','进行','相关','工作','情况','问题','需要','应当','应该','可以','以及','及','和','与','或','的','了','在','是','和','与','及','或','把','被','将','对','为','以','于','中','内','上','下','你','我','他','她','它','们','这','那','就','都','很','也','还','又','再','便','则','而','且','并','但','却','由','从','向','到','给','让','使','令','个','些','项','件','次','不','没','无','有','要','会','能','可','之','其','此','该','本','各','每','某','所','等','般','样','种','类','时','时候','方面','方式','进行','开展','实现','提高','加强','推进','落实','认真','积极','进一步','目前','现在','已经','正在','将','会','啊','吧','呢','吗','嘛','哦','哈','呀','啦','么','着','过','地','得']);
+// 中文 2-4 字词频统计（基于 N-gram 粗切，配合停用词与词长过滤）
+function keywordFreq(text,topN=12){
+  const clean=(text||'').replace(/[^\u4e00-\u9fa5A-Za-z0-9]/g,' ');
+  const freq={};
+  // 2~4 字滑窗
+  for(const seg of clean.split(/\s+/)){
+    for(let len=2;len<=4;len++){
+      for(let i=0;i+len<=seg.length;i++){
+        const w=seg.slice(i,i+len);
+        if(/^[0-9]+$/.test(w))continue;
+        if(STOP_WORDS.has(w))continue;
+        // 首尾是停用单字的降权/跳过
+        const head=w[0],tail=w[w.length-1];
+        if('的了在是和与及或将把被对为以于中我你他她它们这那就都很也还而且并但由从向到给让使不没无有要会能可之其此该本各每等种时'.includes(head))continue;
+        if('的了在是和与及或将把被对为以于中我你他她它们这那就都很也还而且并但由从向到给让使不没无有要会能可之其此该本各每等种时地得着过'.includes(tail))continue;
+        freq[w]=(freq[w]||0)+1;
+      }
+    }
+  }
+  // 长词包含短词且频次相同则抑制短词
+  const entries=Object.entries(freq).filter(([w,c])=>c>=1);
+  const score={};
+  entries.forEach(([w,c])=>{score[w]=c*(w.length>=3?1.6:1);});
+  return entries.map(([w])=>[w,score[w]]).sort((a,b)=>b[1]-a[1]||b[0].length-a[0].length).slice(0,topN).map(x=>x[0]);
+}
+// 抽取式摘要：句子打分（位置、关键词、线索词、长度）
+function extractSummary(text,maxSent=5){
+  const sents=splitSentences(text);
+  if(sents.length<=maxSent)return sents;
+  const kws=new Set(keywordFreq(text,20));
+  const clue=/一是|二是|三是|首先|其次|再次|最后|总体|综上|因此|总之|主要|关键|核心|重点|目标|任务|要求|原则|措施|成效|结果|表明|显示|认为|指出|强调/;
+  const scored=sents.map((s,i)=>{
+    let sc=0;
+    for(const w of kws){if(s.includes(w))sc+=1.2;}
+    if(clue.test(s))sc+=2;
+    sc+=Math.max(0,2-i*0.4); // 开头句权重
+    const len=s.length; if(len<10)sc-=2; if(len>120)sc-=1;
+    return {s,sc,i};
+  }).sort((a,b)=>b.sc-a.sc);
+  return scored.slice(0,maxSent).sort((a,b)=>a.i-b.i).map(x=>x.s);
+}
+// 识别/生成大纲
+function buildOutline(text){
+  const heads=[];
+  const lines=(text||'').split(/\n/).map(x=>x.trim()).filter(Boolean);
+  const reNum=/^(?:[一二三四五六七八九十]+、|（[一二三四五六七八九十]+）|\([一二三四五六七八九十]+\)|\d+[.、]|[（(]\d+[)）]|第[一二三四五六七八九十\d]+[章节部分])/;
+  lines.forEach(l=>{if(reNum.test(l)&&l.length<=40)heads.push(l.replace(/[。：:\s]+$/,''));});
+  if(heads.length>=2)return [...new Set(heads)].slice(0,12);
+  // 无编号：用要点句生成
+  return extractSummary(text,6).map((s,i)=>`${'一二三四五六七八九十'[i]}、${s.length>26?s.slice(0,26)+'…':s}`);
+}
+/* 公文语料句池（主题、关键词可注入） */
+function fillSentences(topic, kws, n){
+  const kw = kws&&kws.length?kws:[topic||'各项工作'];
+  const T=topic||'该项工作';
+  const pool=[
+    `围绕${T}，我们坚持问题导向、目标导向、结果导向相统一，把${rnd(kw)}摆在突出位置，细化任务分工、压实工作责任，形成了上下联动、齐抓共管的工作格局。`,
+    `在具体推进过程中，注重把${rnd(kw)}与中心工作紧密结合，建立健全统筹协调、调度通报、跟踪问效机制，做到有部署、有检查、有反馈、有落实，确保各项任务不折不扣落地见效。`,
+    `针对${rnd(kw)}领域存在的薄弱环节，坚持分类施策、精准发力，逐项建立工作台账，明确时间表、路线图和责任人，以钉钉子精神一抓到底，推动相关工作取得阶段性成效。`,
+    `实践中我们深刻体会到，抓好${T}必须强化系统观念，正确处理当前与长远、重点与全面、继承与创新的关系，注重总结提炼行之有效的经验做法，并及时固化为长效机制。`,
+    `通过持续用力，${rnd(kw)}相关工作呈现稳中有进、进中提质的良好态势，干部群众的认可度和满意度不断提升，为高质量发展提供了有力支撑和坚实保障。`,
+    `工作推进中始终坚持实事求是，既讲成绩也不回避问题，通过深入基层一线走访调研、广泛听取意见建议，进一步找准了制约${rnd(kw)}的症结所在，明确了改进方向。`,
+    `注重发挥典型引路作用，及时发现和培育${rnd(kw)}方面的先进样板，通过现场观摩、经验交流等方式以点带面、整体推进，带动工作水平整体跃升。`,
+    `把制度建设贯穿始终，围绕${T}修订完善一批制度规范，推动工作由集中整治向常态长效转变，做到用制度管人、按流程办事，规范化、标准化水平明显提高。`,
+    `在${rnd(kw)}过程中，始终坚持以人民为中心的发展思想，把群众满意不满意作为检验工作成效的根本标准，着力解决群众急难愁盼问题，不断增强获得感、幸福感、安全感。`,
+    `强化数字赋能与流程再造，依托信息化手段对${rnd(kw)}进行全流程闭环管理，数据多跑路、群众少跑腿，办事效率和服务质量同步提升。`,
+    `坚持清单化管理、项目化推进，对${T}各项任务实行周调度、月通报、季评估，做到任务到人、责任到岗、时限到天，确保件件有着落、事事有回音。`,
+    `注重加强队伍能力建设，通过专题培训、以干代训、轮岗交流等方式，提升干部队伍抓${rnd(kw)}的专业素养和实战本领，为工作开展提供坚强组织保证。`,
+    `严格落实经费、人员、场地等要素保障，建立跨部门协同会商机制，及时打通堵点、破解难点，为${T}有序推进创造良好条件。`,
+    `坚持目标不变、标准不降、力度不减，对已完成的任务组织“回头看”，对正在推进的任务紧盯不放，对尚未启动的任务提前谋划，确保善始善终、善作善成。`,
+    `从督查调研情况看，${rnd(kw)}总体推进有序、成效明显，但也存在进展不够平衡、精细化程度不高、创新办法不多等问题，需要在下一步工作中着力加以解决。`,
+    `我们将${T}与年度重点任务一体谋划、一体部署、一体考核，做到年初有计划、阶段有调度、年终有考评，推动形成比学赶超、争先进位的浓厚氛围。`
+  ];
+  return pickN(pool,Math.min(n,pool.length)).join('');
+}
+/* 各稿件分类的章节框架 */
+const ART_FRAME={
+  '汇报类':['一、基本情况','二、主要做法与成效','三、存在的问题','四、下一步工作安排'],
+  '调研类':['一、调研背景与基本情况','二、发展现状与主要做法','三、存在的主要问题','四、对策与建议'],
+  '计划类':['一、背景与总体要求','二、主要目标','三、重点任务','四、保障措施'],
+  '方案类':['一、工作目标','二、重点任务','三、实施步骤','四、保障措施'],
+  '总结类':['一、工作概述','二、主要成效','三、经验做法','四、存在不足与下步打算'],
+  '考核类':['一、岗位职责履行情况','二、主要工作业绩','三、存在的问题与不足','四、今后努力方向'],
+  '讲话类':['一、认清形势，统一思想','二、突出重点，狠抓落实','三、强化保障，凝聚合力'],
+  '演讲类':['一、岗位认识与个人优势','二、工作实绩与实践积累','三、未来规划与履职承诺'],
+  '宣传类':['一、背景缘由','二、主要事迹与内容','三、殷切期望与号召'],
+  '党建类':['一、思想认识','二、对照查摆情况','三、原因剖析','四、整改措施与努力方向'],
+  '新闻类':['导语','一、事件经过','二、背景与意义','结语'],
+  '函':['一、基本情况','二、商请（答复）事项','三、有关说明'],
+  '通知':['一、总体要求','二、主要安排','三、工作要求'],
+  '报告':['一、基本情况','二、主要工作','三、问题与打算']
+};
+/* 步骤写作：生成摘要（提纲），≤300字 */
+AI.abstract=function(f){
+  const kws=(f.kws||[]).join('、');
+  const supp=(f.supp||[]).map(x=>`【${x.name}】${x.text||'（待补充）'}`).join('；');
+  return `本文拟围绕《${f.title||'未命名稿件'}》展开，文体定位为${f.cat}—${f.type}—${f.scene}，计划撰写为${({短:'短篇（500-1000字）',中:'中篇（2000-5000字）',长:'长篇（5000字以上）'})[f.length]||'中篇'}。\n`+
+    `核心关键词：${kws||'由正文结合主题提炼'}。\n`+
+    `行文思路：先交代背景与总体情况，再围绕关键词分层次展开主体内容，最后归纳问题、提出下一步安排，做到结构完整、重点突出、数据与事例相结合。\n`+
+    (supp?`补充材料要点：${supp}。\n`:'')+
+    `整体语言风格庄重规范、表述准确简练，符合党政公文写作要求。`;
+};
+/* 步骤写作：生成全文（按篇幅真实控制字数） */
+AI.article=function(f, abstract){
+  const frame=ART_FRAME[f.cat]||ART_FRAME['汇报类'];
+  const kws=f.kws&&f.kws.length?f.kws:[f.scene];
+  const topic=(f.title||f.scene||'').replace(/[《》]/g,'');
