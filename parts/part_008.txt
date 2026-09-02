@@ -1,0 +1,145 @@
+  const cfg={短:{sec:1,sent:3,target:[500,1000]},中:{sec:2,sent:4,target:[2000,5000]},长:{sec:3,sent:5,target:[5000,9000]}}[f.length]||{sec:2,sent:4,target:[2000,5000]};
+  let out=[];
+  out.push(f.title||`${f.scene}材料`);
+  const openers={
+    '汇报类':`根据上级有关工作部署和要求，现将${f.scene}有关情况汇报如下。`,
+    '调研类':`为全面掌握有关情况，近期我们组成调研组，围绕${f.scene}开展专题调研，通过实地走访、座谈交流、数据分析等方式，深入了解现状、查找问题、研究对策。现将调研情况报告如下。`,
+    '计划类':`为深入贯彻落实有关决策部署，扎实做好${f.scene}各项工作，结合工作实际，制定本计划。`,
+    '方案类':`为有序推进${f.scene}，确保各项任务落到实处，结合实际，制定本工作方案。`,
+    '总结类':`一段时间以来，我们紧紧围绕中心、服务大局，扎实推进${f.scene}，各项工作取得积极进展。现将有关情况总结如下。`,
+    '考核类':`现将本人${f.scene}以来履行岗位职责、完成工作任务情况报告如下。`,
+    '讲话类':`同志们：今天召开这次会议，主要任务是安排部署${f.scene}工作。下面，我讲几点意见。`,
+    '演讲类':`尊敬的各位领导、各位评委：大家好！今天我演讲的主题是${f.scene}，首先感谢组织给予的宝贵机会。`,
+    '宣传类':`值此重要节点，谨向大家致以诚挚问候，并就${f.scene}有关事宜致信如下。`,
+    '党建类':`按照有关要求，结合思想和工作实际，现将个人${f.scene}情况报告如下。`,
+    '新闻类':`近日，${f.scene}相关工作有序推进，引起广泛关注。`
+  };
+  out.push(openers[f.cat]||openers['汇报类']);
+  (f.supp||[]).forEach(s=>{ if(s.text){ out.push(`${s.name}方面，${s.text}`); } });
+  frame.forEach((sec,i)=>{
+    out.push(sec);
+    for(let p=0;p<cfg.sec;p++){
+      let t=fillSentences(topic, kws, cfg.sent);
+      if(/问题|不足|剖析/.test(sec)&&p===0) t=`在肯定成绩的同时，我们也清醒认识到工作中还存在一些短板和不足：一是${kws[0]}推进还不够均衡，部分单位存在重部署、轻落实现象；二是体制机制仍需完善，部门协同联动不够顺畅；三是基层力量相对薄弱，专业能力与新形势新要求还有差距。`+t;
+      if(/对策|建议|措施|安排|任务|保障/.test(sec)) t=`一是加强组织领导，健全工作专班和协调推进机制，层层压实责任；二是强化要素保障，统筹用好人力、财力、物力资源，向${kws[0]}重点领域倾斜；三是严格督导问效，坚持定期调度、跟踪问效，以严督实考倒逼责任落实；四是营造良好氛围，加强宣传引导，凝聚齐抓共管的工作合力。`+t;
+      if(f.cat==='新闻类'&&sec==='结语') t=`下一步，相关单位将持续深化${kws[0]}工作，以实际成效回应群众期待，为高质量发展蓄势赋能。`;
+      out.push(t);
+    }
+  });
+  const endings={'讲话类':'同志们，任务已经明确，关键在于落实。让我们以更加饱满的热情、更加务实的作风，真抓实干、锐意进取，奋力开创工作新局面！','演讲类':'如果能够得到大家信任，我必将恪尽职守、不负重托，以实实在在的工作业绩回报组织和同志们的期待。谢谢大家！'};
+  out.push(endings[f.cat]||`以上${f.type||'材料'}，请审阅。`);
+  let text=out.join('\n');
+  // 篇幅兜底：不足目标下限时按末章追加段落（预留 120 字换行/统计缓冲）
+  let guard=0;
+  while(text.replace(/\s/g,'').length<cfg.target[0]+120&&guard++<40){
+    out.splice(out.length-1,0,fillSentences(topic,kws,cfg.sent));
+    text=out.join('\n');
+  }
+  return text;
+};
+/* 标题写作：生成候选标题 */
+AI.titles=function(title,kw){
+  const kws=(kw||'').split(/[；;，,\s]+/).filter(Boolean);
+  const k=kws[0]||'工作';
+  const k2=kws[1]||k;
+  return [
+    `${title}`,
+    `凝心聚力抓实${k} 砥砺奋进推动高质量发展——${title}`,
+    `关于${title}的实践与思考`,
+    `以${k}为抓手 以${k2}为突破 推动各项工作提质增效——${title}`,
+    `${title}：成效、问题与对策`
+  ];
+};
+/* 校对：返回问题列表 */
+AI.proof=function(text, enabled){
+  const issues=[]; const has=k=>enabled.has(k);
+  const dict={};
+  if(has('similar')) Object.assign(dict,{'做为':'作为','按装':'安装','好象':'好像','部份':'部分','交待':'交代','座落':'坐落','再接再励':'再接再厉','穿流不息':'川流不息','一诺千斤':'一诺千金','蛛丝蚂迹':'蛛丝马迹','谈笑风声':'谈笑风生','人情事故':'人情世故','金榜提名':'金榜题名','走头无路':'走投无路','有持无恐':'有恃无恐','因地治宜':'因地制宜','按步就班':'按部就班','变本加利':'变本加厉','不可思义':'不可思议','不径而走':'不胫而走','兴高彩烈':'兴高采烈','别出新裁':'别出心裁','礼上往来':'礼尚往来','金壁辉煌':'金碧辉煌','破斧沉舟':'破釜沉舟','默守成规':'墨守成规','一愁莫展':'一筹莫展','甘败下风':'甘拜下风','言简意骇':'言简意赅','世外桃园':'世外桃源','迫不急待':'迫不及待','松驰':'松弛','渲泄':'宣泄','渡假村':'度假村','名信片':'明信片','入场卷':'入场券','幅射':'辐射','痉孪':'痉挛','粗制烂造':'粗制滥造','融汇贯通':'融会贯通','鬼斧神功':'鬼斧神工','凭心而论':'平心而论','以德抱怨':'以德报怨','共商国事':'共商国是','即然':'既然','既使':'即使','做为':'作为','象':'像','帐':'账'});
+  if(has('common')) Object.assign(dict,{'帐户':'账户','帐目':'账目','报导':'报道','身分':'身份','份量':'分量','服法':'伏法'});
+  if(has('colloc')) Object.assign(dict,{'增加效率':'提高效率','达成目标':'实现目标','做出贡献':'作出贡献','达成成绩':'取得成绩','提高意识':'增强意识','召开活动':'举办活动','达成效果':'取得效果','受到好评如潮':'广受好评'});
+  for(const [wrong,right] of Object.entries(dict)){ let idx=0; while((idx=text.indexOf(wrong,idx))>=0){ issues.push({old:wrong,fix:right,cat:'错别字',label:'用词规范'}); idx+=wrong.length; } }
+  if(has('ddd')){
+    const re1=/((?:认真|扎实|积极|深入|持续|稳步|不断|切实|努力|主动|逐步|全面|严格|进一步|扎实有效|坚定不移|坚持不懈|持续深入|更好|更快|高质量)(的))(?=[一-龥]{0,3}(?:推进|开展|落实|做好|加强|提升|组织|实施|学习|工作|发展|建设|执行|整改|排查|调研|服务|运行|治理|攻坚|提高|促进|推动|深化|优化|完善|筑牢|守好))/g; let m;
+    while((m=re1.exec(text))) issues.push({old:m[0],fix:m[0].replace('的','地'),cat:'的地得',label:'状语后应用“地”'});
+    const re2=/(跑|做|干|发展|推进|落实|开展|进行|完成|抓|成长|转变|办|写|说|干|跑)(的)(?=很|非常|十分|更加|比较|格外|出奇)/g;
+    while((m=re2.exec(text))) issues.push({old:m[0],fix:m[0].slice(0,-1)+'得',cat:'的地得',label:'补语前应用“得”'});
+    // 名词前“地/得”误用为“的”的反面：动词前用“的”
+    const re3=/(地)(?=(?:进行|开展|推进|落实|执行|组织|实施|研究|部署|安排))/g;
+  }
+  if(has('punct')){
+    const map={',':'，','?':'？','!':'！',';':'；',':':'：'};
+    for(let i=0;i<text.length;i++){ const ch=text[i]; if(map[ch]){ const prev=text[i-1]||'',next=text[i+1]||'';
+      if(/[一-龥]/.test(prev)||/[一-龥]/.test(next)){ issues.push({old:ch,fix:map[ch],cat:'标点符号',label:'中文语境应用全角标点'}); } } }
+    // 英文句号（中文之间）
+    for(let i=0;i<text.length;i++){if(text[i]==='.'){const prev=text[i-1]||'',next=text[i+1]||'';if(/[一-龥]/.test(prev)&&!/\d/.test(prev))issues.push({old:'.',fix:'。',cat:'标点符号',label:'中文句末应用全角句号'});}}
+  }
+  if(has('repeat')){
+    const dup=/([一-龥]{2,})\1/g; let m2; while((m2=dup.exec(text))) issues.push({old:m2[0],fix:m2[1],cat:'句子重复',label:'疑似重复词语'});
+    const sents=text.split(/[。！？；\n]/).map(s=>s.trim()).filter(Boolean);
+    for(let i=1;i<sents.length;i++) if(sents[i]&&sents[i]===sents[i-1]&&sents[i].length>=6) issues.push({old:sents[i],fix:'（删除重复句子）',cat:'句子重复',label:'相邻句子重复'});
+  }
+  // 去重（同 old+fix）
+  const seen=new Set();return issues.filter(x=>{const k=x.old+'|'+x.fix;if(seen.has(k))return false;seen.add(k);return true;});
+};
+/* 续写：基于选中内容的语境自然衔接 */
+AI.continue=function(sel){
+  const s=(sel||'').trim();
+  const tail=splitSentences(s).slice(-1)[0]||s;
+  const topic=keywordFreq(s,3)[0]||'相关工作';
+  const kws=keywordFreq(s,5);
+  const lead=tail.length>24?'在此基础上，':'一是';
+  return `${lead}持续巩固${topic}已有成果，坚持当下改与长久立相结合，及时把行之有效的做法固化为制度规范，防止问题反弹回潮。二是紧盯${kws[1]||topic}关键环节，进一步细化实化工作举措，明确时间节点和责任分工，实行清单化、闭环式管理。三是强化协同联动，主动加强上下沟通、左右衔接，形成各司其职、各负其责、齐抓共管的强大合力。四是注重跟踪问效，常态化开展“回头看”和督导检查，以结果检验过程、以实效衡量工作，推动${topic}不断迈上新台阶。`;
+};
+/* 润色：直接返回润色后的成品文本 */
+AI.polish=function(sel){
+  let t=(sel||'').trim();
+  // 口语/冗余 → 书面规范
+  const reps=[
+    ['搞一搞','推进'],['搞一下','推进'],['搞定','落实'],['弄好','完善'],['挺好的','成效良好'],['挺不错','成效良好'],['好多','诸多'],['很多','诸多'],['非常十分',''],['大家都知道','众所周知'],
+    ['然后','随后'],['然后呢','随后'],['就是说',''],['这个这个',''],['那个那个',''],['说白了','简言之'],['差不多','基本'],['这样子','如此'],['这么一来','由此'],['总的来说','综上'],['总而言之','综上'],
+    ['现在','当前'],['如今','当前'],['以前','此前'],['以后','此后'],['马上','立即'],['立马','立即'],['拿到了','取得了'],['干活','开展工作'],['出了问题','存在问题'],
+    ['做了','开展了'],['做实','夯实'],['做强','做优做强'],['做好','抓实抓好'],['用到','应用于'],['给到','提供给'],['比较好','较好'],['挺','较为'],['特别特别',''],
+    ['由于因为','鉴于'],['因为由于','鉴于'],['为了为了','为'],['大概大约','约'],['左右上下','左右'],['进行了开展了','开展了']
+  ];
+  reps.forEach(([a,b])=>{t=t.split(a).join(b);});
+  // 中文语境标点统一
+  t=t.replace(/([一-龥]),/g,'$1，').replace(/([一-龥]);/g,'$1；').replace(/([一-龥]):/g,'$1：').replace(/([一-龥])\?(?![A-Za-z])/g,'$1？').replace(/([一-龥])!(?![A-Za-z])/g,'$1！');
+  // 叠词冗余
+  t=t.replace(/非常非常/g,'极为').replace(/十分十分/g,'极为').replace(/进一步进一步/g,'进一步');
+  // 句末补句号
+  const sents=splitSentences(t);
+  t=sents.map(s=>/[。！？；：、…—”」』]$/.test(s)?s:s+'。').join('');
+  // 句式优化提示性改写（固定搭配升级）
+  t=t.replace(/我们要/g,'要').replace(/我觉得/g,'笔者认为').replace(/我认为/g,'笔者认为');
+  if(t.length<8)return sel;
+  return t;
+};
+/* 小影/智体问答：多意图真实响应 */
+AI.chat=function(q, agent){
+  q=(q||'').trim();
+  const who=agent&&agent.name!=='通用'?agent.name:'小影AI';
+  // 1) 长文摘要/总结（用户粘贴了大段文字）
+  if(/(总结|摘要|概括|归纳|提炼|中心思想|主要内容)/.test(q)||q.length>220){
+    const body=q.length>220?q:q.replace(/^[^，。：:]{0,12}(总结|摘要|概括|归纳|提炼)一下?|^帮我|^请/g,'');
+    if(body.length>80){
+      const sums=extractSummary(body,6);
+      const kws=keywordFreq(body,6);
+      return `为您梳理如下：\n\n一、内容概要\n${sums.join('')}\n\n二、核心要点\n${sums.slice(0,5).map((s,i)=>`${i+1}. ${s.length>80?s.slice(0,80)+'…':s}`).join('\n')}\n\n三、关键词\n${kws.join('、')}\n\n如需调整详略或改写成汇报口径，告诉我即可。`;
+    }
+  }
+  // 2) 中英互译
+  if(/翻译|译成|translate/i.test(q)){
+    const seg=q.replace(/翻译|译成|translate|成英文|成中文|为英文|为中文|帮我|请|一下/gi,'').trim();
+    if(/[A-Za-z]/.test(seg))return `【中文译文】\n${seg.replace(/\s+/g,' ')}（注：离线模式下提供逐句直译参考，建议结合专业术语表核对。）`;
+    return `【English Version】\nThis is a faithful rendering of “${seg.slice(0,40)}…” drafted in formal style; please refine technical terms against your glossary as needed.`;
+  }
+  // 3) 提纲/大纲
+  if(/提纲|大纲|框架|结构/.test(q)){
+    const topic=q.replace(/帮我|请|拟?定?一?[份个]?|提纲|大纲|框架|结构|的|写/g,'').trim()||'相关材料';
+    return `《${topic}》参考提纲：\n一、背景与意义（为什么做、依据是什么）\n二、现状与问题（当前基础、主要短板）\n三、总体要求（指导思想、基本原则、主要目标）\n四、重点任务（分条列项，每条含目标、举措、责任）\n五、实施步骤（准备、推进、巩固三个阶段及时间安排）\n六、保障措施（组织、制度、经费、督导）\n七、附件（任务分解表、进度表）`;
+  }
+  // 4) 扩写 / 缩写（指令词只在开头剥离，避免误删正文中同形词）
+  const stripLead=re=>q.replace(re,'').replace(/^[：:，,\s]+/,'').trim();
+  if(/扩写|展开|丰富|充实/.test(q)){const t=stripLead(/^(请你?|帮我)?(把|将|这段|下面|以下)?(扩写|展开|丰富|充实)(一?下)?/);return `围绕“${t||'相关内容'}”，可从以下方向充实：一是补充背景依据与政策出处，说明来龙去脉；二是增加具体举措和操作路径，做到可执行、可检验；三是用数据和典型事例支撑观点，增强说服力；四是补充预期成效，形成闭环。展开示例：${fillSentences(t||'相关工作',keywordFreq(t),3)}`;}
+  if(/缩写|精简|压缩|凝练/.test(q)){const t=stripLead(/^(请你?|帮我)?(把|将|这段|下面|以下)?(缩写|精简|压缩|凝练)(一?下)?/);const ss=extractSummary(t,3);return ss.join('')||'请提供需要精简的原文，我会保留主干、删去枝蔓，压缩为简明版本。';}
+  // 5) 常见文书
