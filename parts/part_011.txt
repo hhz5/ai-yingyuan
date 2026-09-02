@@ -1,0 +1,184 @@
+  noteTa.addEventListener('input',()=>cnt.textContent=noteTa.value.length+'/2000');
+  let vis=a.visibility||'private', cat=a.category||'党政媒体';
+  const visPills=new Set(); // 用 radio
+  function radio(name,value,label,current,onChange){
+    const inp=h('input',{type:'radio',name,checked:current===value});
+    inp.addEventListener('change',onChange);
+    return h('label',{},[inp,h('span',{text:label})]);
+  }
+  const visBox=h('div',{class:'radio-pills'},[
+    radio('vis','private','私有智体',vis,()=>{vis='private';}),radio('vis','public','公共智体',vis,()=>{vis='public';})
+  ]);
+  const catBox=h('div',{class:'radio-pills'},['党政媒体','营销媒体','企业应用'].map(c=>radio('catpub',c,c,cat,()=>{cat=c;})));
+  const pub=h('button',{class:'btn btn-primary',html:ICON.check+' 发布',onClick:()=>{
+    a.publishNote=noteTa.value;a.visibility=vis;a.category=cat;a.status='published';a.ut=now();saveState();
+    toast('已成功提交发布！');go('#/agent-edit?id='+a.id);
+  }});
+  view.appendChild(h('div',{class:'page',style:{maxWidth:'760px'}}},[
+    h('div',{class:'card',style:{padding:'22px'}}},[
+      h('div',{class:'field'},[h('div',{class:'field-label',text:'发布记录'}),noteTa,cnt]),
+      h('div',{class:'field'},[h('div',{class:'field-label',text:'可见度'}),visBox,h('div',{class:'field-hint',text:'私有智体仅自己可用；公共智体发布后可在对应分类被其他用户发现'})]),
+      h('div',{class:'field'},[h('div',{class:'field-label',text:'分类'}),catBox]),
+      h('div',{style:{display:'flex',justifyContent:'flex-end',marginTop:'20px'}},[pub])
+    ])
+  ]));
+};
+
+/* ============================================================
+   十、AI 写作工作台
+   ============================================================ */
+const Writing={editor:null,activeTab:'step',panel:null,savedRange:null,selText:'',proofIssues:[],proofCfg:null,collapsed:false};
+let editor=null;
+const RP_TABS=[
+  {k:'history',t:'历史记录',icon:'history'},{k:'step',t:'步骤写作',icon:'step'},
+  {k:'title',t:'标题写作',icon:'title'},{k:'proof',t:'AI校对',icon:'proof'},
+  {k:'continue',t:'AI续写',icon:'cont'},{k:'polish',t:'AI润色',icon:'polish'},
+  {k:'xiaoying',t:'小影AI',icon:'chat'}
+];
+Views.Writing=function(){
+  setTopbar('AI 写作','企业智体 / 推荐智体',[
+    h('button',{class:'btn btn-sm',html:ICON.doc+' 载入示例文稿',onClick:loadDemoText}),
+    h('button',{class:'btn btn-sm',html:ICON.clear+' 清空',onClick:async()=>{if(!editor.getText())return;const ok=await confirmDialog({title:'清空编辑区',content:'确定清空当前编辑区全部内容吗？',okText:'清空'});if(ok){editor.set('');toast('已清空');}}})
+  ]);
+  const view=$('#view');view.innerHTML='';
+  // ---- 编辑器 ----
+  const edEl=h('div',{id:'editor',contenteditable:'true',spellcheck:'false','data-placeholder':'请在此输入内容，选择右侧AI功能可辅助您快速写作'});
+  const wordCount=h('span',{text:'0 字'});
+  const selCount=h('span',{text:''});
+  editor={
+    el:edEl,
+    getText(){return edEl.innerText.replace(/\n$/,'');},
+    set(text){edEl.innerHTML=text.split('\n').map(l=>'<p>'+(esc(l)||'<br>')+'</p>').join('');this.sync();S.draft=this.getText();saveState();},
+    sync(){wordCount.textContent=this.getText().length+' 字';},
+    saveRange(){const sel=window.getSelection();if(sel.rangeCount&&edEl.contains(sel.anchorNode)){this.savedRange=sel.getRangeAt(0);this.selText=sel.toString();}},
+    insertAtCursor(text){
+      edEl.focus(); const sel=window.getSelection(); let range=this.savedRange;
+      if(!range||!edEl.contains(range.commonAncestorContainer)){ edEl.appendChild(document.createTextNode('')); range=document.createRange();range.selectNodeContents(edEl);range.collapse(false);}
+      const frag=document.createDocumentFragment();
+      text.split('\n').forEach((line,i)=>{if(i>0)frag.appendChild(document.createElement('br'));frag.appendChild(document.createTextNode(line));});
+      range.deleteContents();range.insertNode(frag);range.collapse(false);sel.removeAllRanges();sel.addRange(range);this.sync();afterEditorChange();
+    },
+    replaceSelection(text){
+      edEl.focus();const sel=window.getSelection();
+      if(this.savedRange&&edEl.contains(this.savedRange.commonAncestorContainer)){sel.removeAllRanges();sel.addRange(this.savedRange);}
+      document.execCommand('insertText',false,text);this.sync();afterEditorChange();
+    }
+  };
+  edEl.addEventListener('input',()=>{editor.sync();clearTimeout(window._dt);window._dt=setTimeout(()=>{S.draft=editor.getText();saveState();},500);});
+  // 选中文字 → 浮动工具条
+  const floatTools=h('div',{class:'floating-tools',style:{display:'none'}}},[
+    h('button',{html:ICON.cont+' AI续写',onClick:()=>{switchTab('continue');}}),
+    h('button',{html:ICON.polish+' AI润色',onClick:()=>{switchTab('polish');}})
+  ]);
+  if(Writing._selHandler)document.removeEventListener('selectionchange',Writing._selHandler);
+  Writing._selHandler=()=>{
+    const sel=window.getSelection(); const txt=sel.toString();
+    if(sel.rangeCount&&edEl.contains(sel.anchorNode)&&txt.trim().length>0){
+      editor.saveRange(); Writing.selText=txt;
+      const range=sel.getRangeAt(0),rect=range.getBoundingClientRect();
+      const wrap=edEl.closest('.editor-wrap').getBoundingClientRect();
+      floatTools.style.display='flex';
+      floatTools.style.top=(rect.top-wrap.top-40)+'px'; floatTools.style.left=(rect.left-wrap.left)+'px';
+    }else{ floatTools.style.display='none'; }
+    selCount.textContent=txt.trim()?`已选 ${txt.trim().length} 字`:'';
+    if(Writing.activeTab==='continue'||Writing.activeTab==='polish') renderPanel();
+  };
+  document.addEventListener('selectionchange',Writing._selHandler);
+  function exec(cmd,val){edEl.focus();document.execCommand(cmd,false,val||null);edEl.dispatchEvent(new Event('input'));}
+  const fmtSel=h('select',{class:'tb-select',title:'段落格式',onChange:e=>{exec('formatBlock',e.target.value==='p'?'p':'<'+e.target.value+'>');e.target.value='p';}},[
+    h('option',{value:'p',text:'正文'}),h('option',{value:'h1',text:'标题 1'}),h('option',{value:'h2',text:'标题 2'}),h('option',{value:'h3',text:'标题 3'}),h('option',{value:'blockquote',text:'引用'})
+  ]);
+  const fsSel=h('select',{class:'tb-select',title:'字号',onChange:e=>{exec('fontSize','4');const f=edEl.querySelector('font[size="4"]');if(f){f.removeAttribute('size');f.style.fontSize=e.target.value;}fsSel.value='df';}},[
+    h('option',{value:'df',text:'字号'}),h('option',{value:'14px',text:'小'}),h('option',{value:'16px',text:'标准'}),h('option',{value:'18px',text:'中'}),h('option',{value:'22px',text:'大'}),h('option',{value:'28px',text:'特大'})
+  ]);
+  const toolbar=h('div',{class:'editor-toolbar'},[
+    fmtSel,fsSel,h('span',{class:'tb-sep'}),
+    tb(ICON.bold,'加粗',()=>exec('bold')),tb(ICON.italic,'斜体',()=>exec('italic')),tb(ICON.underline,'下划线',()=>exec('underline')),tb(ICON.strike,'删除线',()=>exec('strikeThrough')),
+    h('span',{class:'tb-sep'}),
+    tb(ICON.ul,'无序列表',()=>exec('insertUnorderedList')),tb(ICON.ol,'有序列表',()=>exec('insertOrderedList')),
+    h('span',{class:'tb-sep'}),
+    tb(ICON.alL,'左对齐',()=>exec('justifyLeft')),tb(ICON.alC,'居中',()=>exec('justifyCenter')),tb(ICON.alR,'右对齐',()=>exec('justifyRight')),tb(ICON.alJ,'两端对齐',()=>exec('justifyFull')),
+    h('span',{class:'tb-sep'}),
+    tb(ICON.indent,'增加缩进',()=>exec('indent')),tb(ICON.outdent,'减少缩进',()=>exec('outdent')),tb(ICON.clear,'清除格式',()=>exec('removeFormat')),
+    h('span',{class:'tb-sep'}),
+    tb(ICON.ret,'撤销',()=>exec('undo')),tb(ICON.redo,'重做',()=>exec('redo')),
+    h('span',{style:{flex:1}}),
+    h('button',{class:'btn btn-sm',html:ICON.copy+' 复制全文',onClick:e=>{const t=editor.getText();if(!t.trim()){toast('内容为空','warn');return;}copyText(t,e.currentTarget);}}),
+    h('button',{class:'btn btn-sm',html:ICON.download+' 导出',onClick:openExportMenu}),
+    h('button',{class:'btn btn-sm btn-primary',html:ICON.save+' 保存到记录',onClick:()=>{const t=editor.getText();if(!t.trim()){toast('内容为空，无法保存','warn');return;}const title=t.split('\n')[0].slice(0,30);S.writingHistory.unshift({id:uid(),title,text:t,ct:now()});saveState();toast('已保存到历史记录');}})
+  ]);
+  function tb(ic,tip,fn){return h('button',{class:'tb-btn',title:tip,html:ic,onClick:fn});}
+  // 点击工具按钮不夺走编辑区选区（下拉选择除外，需正常聚焦）
+  toolbar.addEventListener('mousedown',e=>{if(e.target.closest('select'))return;e.preventDefault();});
+  function openExportMenu(){
+    const t=editor.getText();
+    if(!t.trim()){toast('内容为空，无法导出','warn');return;}
+    const title=t.split('\n')[0].slice(0,40)||'文档';
+    const item=(ic,name,desc,fn)=>h('button',{class:'export-item',onClick:()=>{closeModal();fn();}},[h('span',{class:'export-ic',html:ic}),h('span',{},[h('b',{text:name}),h('small',{text:desc})])]);
+    openModal({width:420,title:'导出文档',body:[h('div',{class:'export-grid'},[
+      item(ICON.copy,'复制全文','复制纯文本到剪贴板',()=>copyText(t)),
+      item(ICON.filetxt,'下载 TXT','纯文本，任意编辑器可打开',()=>{downloadBlob(title+'.txt',t);toast('已导出 TXT 文件');}),
+      item(ICON.doc,'下载 Word','.doc 文件，可用 Word/WPS 打开',()=>{const html='<h1 style="text-align:center">'+esc(title)+'</h1>'+edEl.innerHTML;const doc='<html xmlns:o="urn:schemas-microsoft-com:office:office" xmlns:w="urn:schemas-microsoft-com:office:word"><head><meta charset="utf-8"><title>'+esc(title)+'</title></head><body>'+html+'</body></html>';downloadBlob(title+'.doc',doc,'application/msword');toast('已导出 Word 文件');}),
+      item(ICON.download,'下载 HTML','保留排版的网页文件',()=>{const html='<!doctype html><meta charset="utf-8"><style>body{max-width:760px;margin:40px auto;line-height:1.9;font-family:"Microsoft YaHei",serif;}</style>'+edEl.innerHTML;downloadBlob(title+'.html',html,'text/html;charset=utf-8');toast('已导出 HTML 文件');}),
+      item(ICON.print,'打印 / 另存 PDF','调用浏览器打印，可另存为 PDF',()=>printContent(title,edEl.innerHTML))
+    ])]});
+  }
+  const editorWrap=h('div',{class:'editor-wrap',style:{position:'relative'}}},[
+    toolbar,
+    h('div',{class:'editor-scroll'},edEl),
+    floatTools,
+    h('div',{class:'editor-foot'},[wordCount,selCount])
+  ]);
+  // ---- 右侧面板 ----
+  const tabs=h('div',{class:'rp-tabs'});
+  const hideBtn=h('button',{class:'rp-hide',title:'收起面板',html:ICON.collapse,onClick:()=>{panel.classList.toggle('rp-collapsed');Writing.collapsed=!Writing.collapsed;}});
+  const panelBody=h('div',{class:'rp-body'});
+  RP_TABS.forEach(t=>{
+    tabs.appendChild(h('button',{class:'rp-tab','data-k':t.k,onClick:()=>switchTab(t.k)},[h('span',{html:ic2(t.icon)}),h('span',{text:t.t})]));
+  });
+  tabs.appendChild(hideBtn);
+  const panel=h('div',{class:'right-panel'},[tabs,panelBody]); Writing.panel=panel; Writing.panelBody=panelBody;
+  function ic2(n){return ICON[n];}
+  function switchTab(k){
+    Writing.activeTab=k; $$('.rp-tab',tabs).forEach(b=>b.classList.toggle('active',b.dataset.k===k));
+    if(k==='step'){ openStepWizard(); }
+    renderPanel();
+  }
+  Writing.switchTab=switchTab;
+  Writing.renderPanel=renderPanel;
+  function renderPanel(){
+    panelBody.innerHTML='';
+    ({history:panelHistory,step:panelStep,title:panelTitle,proof:panelProof,continue:panelContinue,polish:panelPolish,xiaoying:panelXiaoying})[Writing.activeTab](panelBody);
+  }
+  view.appendChild(h('div',{class:'workspace',style:{height:'100%'}},[editorWrap,panel]));
+  if(S.draft)editor.set(S.draft);
+  // 首次进入仅激活“步骤写作”面板，由用户点击按钮/标签再打开向导，避免强制弹窗打扰
+  $$('.rp-tab',tabs).forEach(b=>b.classList.toggle('active',b.dataset.k==='step'));
+  renderPanel();
+  editor.sync();
+}
+function afterEditorChange(){S.draft=editor.getText();saveState();if(Writing.proofIssues.length){/* 校对高亮在替换后同步 */}}
+function loadDemoText(){
+  editor.set('关于扶持科技型企业发展工作情况的汇报\n今年以来，我们认真落实惠企政策，积极做为企业服务的“店小二”，增加效率、优化流程，推动各项政策落地见效,取得了良好成效。\n一是强化政策宣传。通过线上线下相结合的方式开展政策宣讲,企业知晓率稳步的提升。\n二是优化政务服务。推进“一网通办”,跑的很快,企业办事更加便捷。\n三是部份企业反映融资难融资贵问题仍然存在,需要在下步工作中认真加以解决。');
+  toast('已载入含常见问题的示例文稿，可体验 AI 校对','info');
+}
+function saveWritingHistory(title,text){S.writingHistory.unshift({id:uid(),title:title||text.split('\n')[0].slice(0,30),text,ct:now()});if(S.writingHistory.length>50)S.writingHistory.pop();saveState();}
+
+/* ---------- 历史记录 ---------- */
+function panelHistory(root){
+  const listWrap=h('div',{});
+  const search=h('input',{class:'input',placeholder:'搜索历史记录标题或内容',style:{paddingLeft:'30px',width:'100%'},onInput:()=>render(search.value.trim().toLowerCase())});
+  const clearAll=h('button',{class:'btn-text danger fs12',text:'清空全部',onClick:async()=>{if(!S.writingHistory.length)return;const ok=await confirmDialog({title:'清空全部记录',content:`确定清空全部 ${S.writingHistory.length} 条写作记录吗？此操作不可恢复。`,okText:'全部清空'});if(ok){S.writingHistory=[];saveState();Writing.renderPanel();toast('已清空全部记录');}}});
+  root.appendChild(h('div',{class:'flex aic g8',style:{marginBottom:'10px'}},[h('div',{class:'search-box',style:{flex:1,position:'relative'}},[h('span',{html:ICON.search,style:{position:'absolute',left:'9px',top:'8px',width:'14px',display:'inline-block'}}),search]),clearAll]));
+  root.appendChild(listWrap);
+  function render(kw){
+    listWrap.innerHTML='';
+    const data=S.writingHistory.filter(x=>!kw||x.title.toLowerCase().includes(kw)||x.text.toLowerCase().includes(kw));
+    if(!S.writingHistory.length){listWrap.appendChild(h('div',{class:'empty-state',html:ICON.history+'<p>暂无写作记录</p>'}));return;}
+    if(!data.length){listWrap.appendChild(h('div',{class:'empty-state',html:ICON.search+'<p>未找到匹配的记录</p>'}));return;}
+    const groups={};
+    data.forEach(x=>{const d=relDate(x.ct);(groups[d]=groups[d]||[]).push(x);});
+    Object.entries(groups).forEach(([d,items])=>{
+      listWrap.appendChild(h('div',{class:'hist-date',text:d}));
+      items.forEach(x=>listWrap.appendChild(h('div',{class:'hist-item',onClick:async()=>{
+        if(editor.getText().trim()){const ok=await confirmDialog({title:'载入历史记录',content:'载入将覆盖当前编辑区内容，是否继续？',okText:'覆盖'});if(!ok)return;}
