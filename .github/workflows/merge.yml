@@ -1,24 +1,36 @@
-name: merge-index
+name: publish-index
 on:
   push:
-    paths:
-      - 'parts_final/**'
   workflow_dispatch:
 permissions:
   contents: write
 jobs:
-  merge:
+  publish:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
-      - name: Merge parts into single-file index.html and clean legacy shards
+      - name: Avoid bot self recursion
+        run: |
+          if git log -1 --pretty=%an | grep -q "github-actions"; then
+            echo "Triggered by bot commit, nothing to do."
+            echo "stop=true" >> "$GITHUB_ENV"
+          fi
+      - name: Fetch canonical single-file app and publish index.html
+        if: env.stop != 'true'
         run: |
           set -e
-          cat parts_final/p*.txt > index.html
-          rm -rf src_parts parts
+          URL="https://aka.doubaocdn.com/s/ojqxhmOiGV"
+          ok=0
+          for i in 1 2 3; do
+            if curl -fL --retry 3 --max-time 120 "$URL" -o index.html; then ok=1; break; fi
+            sleep 3
+          done
+          [ "$ok" = "1" ]
+          echo "414efb0e05839b4894f8c6de46b626a884ef5c06cc61d79b43f72395b7fd68d4  index.html" | sha256sum -c -
+          rm -rf parts_final src_parts parts
           sha256sum index.html > SHA256SUMS
           git config user.name "github-actions[bot]"
           git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
           git add -A
-          git commit -m "ci: merge parts_final into index.html [skip ci]" || echo "nothing to commit"
+          git commit -m "publish: release single-file index.html [skip ci]" || echo "nothing to commit"
           git push
