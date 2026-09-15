@@ -1,0 +1,37 @@
+name: publish-wireframe
+on:
+  push:
+    paths:
+      - '.github/workflows/publish-wireframe.yml'
+  workflow_dispatch:
+permissions:
+  contents: write
+jobs:
+  publish:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: Fetch source and verify sha256
+        env:
+          SRC_URL: https://aka.doubaocdn.com/s/ZLzxQD9rcM
+          EXPECT_SHA: d3abb08cbf5e759e5174e2bacb634995c9db552a807a5bc13d5533aea17c5ba9
+        run: |
+          set -euo pipefail
+          curl -fL --retry 3 "$SRC_URL" -o /tmp/wireframe.html
+          ACTUAL=$(sha256sum /tmp/wireframe.html | awk '{print $1}')
+          echo "expected=$EXPECT_SHA"
+          echo "actual  =$ACTUAL"
+          test "$ACTUAL" = "$EXPECT_SHA"
+          cp /tmp/wireframe.html wireframe.html
+      - name: Commit wireframe.html if changed
+        run: |
+          set -euo pipefail
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          if git diff --quiet -- wireframe.html; then
+            echo "wireframe.html unchanged, nothing to commit"
+          else
+            git add wireframe.html
+            git commit -m "docs: publish full-page wireframe prototype (sha256 verified)"
+            git push
+          fi
