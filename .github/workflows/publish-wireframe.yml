@@ -11,27 +11,46 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
-      - name: Fetch source and verify sha256
+      - name: Fetch, verify and publish
         env:
           SRC_URL: https://aka.doubaocdn.com/s/ZLzxQD9rcM
           EXPECT_SHA: d3abb08cbf5e759e5174e2bacb634995c9db552a807a5bc13d5533aea17c5ba9
         run: |
-          set -euo pipefail
-          curl -fL --retry 3 "$SRC_URL" -o /tmp/wireframe.html
-          ACTUAL=$(sha256sum /tmp/wireframe.html | awk '{print $1}')
-          echo "expected=$EXPECT_SHA"
-          echo "actual  =$ACTUAL"
-          test "$ACTUAL" = "$EXPECT_SHA"
-          cp /tmp/wireframe.html wireframe.html
-      - name: Commit wireframe.html if changed
+          set -uo pipefail
+          mkdir -p .github
+          REPORT=.github/publish-wireframe-report.txt
+          {
+            echo "run at $(date -u +%FT%TZ) UTC"
+            echo "source: $SRC_URL"
+            echo "expected sha256: $EXPECT_SHA"
+          } > "$REPORT"
+          CODE=$(curl -sL -A "Mozilla/5.0" --connect-timeout 20 --max-time 120 --retry 5 --retry-all-errors -w "%{http_code}" "$SRC_URL" -o /tmp/wf.html || echo "000")
+          echo "http_code: $CODE" >> "$REPORT"
+          if [ -f /tmp/wf.html ]; then
+            SZ=$(wc -c < /tmp/wf.html)
+            ACT=$(sha256sum /tmp/wf.html | awk '{print $1}')
+            echo "downloaded bytes: $SZ (expected 86346)" >> "$REPORT"
+            echo "actual sha256: $ACT" >> "$REPORT"
+            echo "--- head bytes ---" >> "$REPORT"
+            head -c 120 /tmp/wf.html | od -An -c | head -5 >> "$REPORT"
+            if [ "$ACT" = "$EXPECT_SHA" ]; then
+              cp /tmp/wf.html wireframe.html
+              echo "result: OK, wireframe.html written" >> "$REPORT"
+            else
+              echo "result: SHA MISMATCH, wireframe.html NOT written" >> "$REPORT"
+            fi
+          else
+            echo "result: DOWNLOAD FAILED, no file fetched" >> "$REPORT"
+          fi
+      - name: Commit report and artifact
         run: |
           set -euo pipefail
           git config user.name "github-actions[bot]"
           git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
-          if git diff --quiet -- wireframe.html; then
-            echo "wireframe.html unchanged, nothing to commit"
+          git add -A
+          if git diff --cached --quiet; then
+            echo "nothing to commit"
           else
-            git add wireframe.html
-            git commit -m "docs: publish full-page wireframe prototype (sha256 verified)"
+            git commit -m "ci: wireframe publish report and artifact"
             git push
           fi
