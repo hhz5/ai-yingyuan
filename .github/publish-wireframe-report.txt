@@ -1,0 +1,13 @@
+run at 2026-09-15T07:13:04Z UTC
+source: https://aka.doubaocdn.com/s/ZLzxQD9rcM
+expected sha256: d3abb08cbf5e759e5174e2bacb634995c9db552a807a5bc13d5533aea17c5ba9
+http_code: 200
+downloaded bytes: 86346 (expected 86346)
+actual sha256: d3abb08cbf5e759e5174e2bacb634995c9db552a807a5bc13d5533aea17c5ba9
+--- head bytes ---
+   <   !   d   o   c   t   y   p   e       h   t   m   l   >  \n
+   <   h   t   m   l       l   a   n   g   =   "   z   h   -   C
+   N   "   >  \n   <   h   e   a   d   >  \n   <   m   e   t   a
+       c   h   a   r   s   e   t   =   "   u   t   f   -   8   "
+   >  \n   <   m   e   t   a       n   a   m   e   =   "   v   i
+result: OK, wireframe.html written

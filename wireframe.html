@@ -1,0 +1,1162 @@
+<!doctype html>
+<html lang="zh-CN">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>影源 · 企业智能创作平台 — 全页面线框原型</title>
+<style>
+:root{
+  --ink:#2b3342; --ink2:#515c70; --ink3:#8a94a6;
+  --line:#cfd6e2; --line2:#e2e7f0;
+  --fill:#edf0f6; --fill2:#f5f7fb; --canvas:#f6f8fb;
+  --side:#39425a; --side2:#454f6b; --side-line:#5a6484;
+  --pri:#46506b; --dan:#b05a5a; --note:#6b7688;
+  --accent:#3a5fc0;
+}
+*{box-sizing:border-box;margin:0;padding:0}
+html{scroll-behavior:smooth}
+body{font-family:"PingFang SC","Microsoft YaHei","Noto Sans SC",system-ui,sans-serif;
+  color:var(--ink);background:#eef1f6;line-height:1.5;font-size:13px;-webkit-font-smoothing:antialiased}
+.wrap{max-width:1240px;margin:0 auto;padding:28px 26px 80px}
+/* ---------- 封面 ---------- */
+.cover{background:#fff;border:1px solid var(--line2);border-radius:14px;padding:30px 32px;margin-bottom:22px}
+.cover h1{font-size:24px;letter-spacing:.5px;margin-bottom:8px}
+.cover .sub{color:var(--ink2);font-size:13px;margin-bottom:4px}
+.cover .meta{display:flex;gap:8px;flex-wrap:wrap;margin-top:14px}
+.chip{border:1px solid var(--line);background:var(--fill2);border-radius:20px;padding:3px 12px;font-size:11.5px;color:var(--ink2)}
+.chip.route{font-family:ui-monospace,Menlo,Consolas,monospace;color:var(--accent)}
+/* ---------- 目录 ---------- */
+.toc{background:#fff;border:1px solid var(--line2);border-radius:14px;padding:18px 22px;margin-bottom:22px}
+.toc h3{font-size:13px;color:var(--ink3);font-weight:600;margin-bottom:10px;letter-spacing:1px}
+.toc-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(170px,1fr));gap:7px 14px}
+.toc a{color:var(--ink2);text-decoration:none;font-size:12.5px;padding:3px 0;border-bottom:1px dashed transparent}
+.toc a:hover{color:var(--accent);border-color:var(--line)}
+.toc a b{color:var(--ink);font-weight:600;margin-right:6px}
+/* ---------- 图例 ---------- */
+.legend{background:#fff;border:1px solid var(--line2);border-radius:14px;padding:18px 22px;margin-bottom:26px}
+.legend h3{font-size:13px;color:var(--ink3);font-weight:600;margin-bottom:12px;letter-spacing:1px}
+.lg-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(150px,1fr));gap:12px 18px;align-items:center}
+.lg-item{display:flex;align-items:center;gap:9px;font-size:11.5px;color:var(--ink2)}
+/* ---------- 区块大标题 ---------- */
+.part-title{display:flex;align-items:center;gap:12px;margin:34px 2px 16px}
+.part-title .n{background:var(--ink);color:#fff;border-radius:8px;font-size:13px;font-weight:600;padding:4px 12px}
+.part-title h2{font-size:17px}
+.part-title .d{color:var(--ink3);font-size:12px}
+.part-title::after{content:"";flex:1;height:1px;background:var(--line)}
+/* ---------- 屏幕卡 ---------- */
+.screen{background:#fff;border:1px solid var(--line2);border-radius:14px;padding:16px 18px 20px;margin-bottom:24px;scroll-margin-top:14px}
+.screen-head{display:flex;align-items:center;gap:11px;padding-bottom:12px;margin-bottom:14px;border-bottom:1px dashed var(--line)}
+.pid{background:var(--fill);border:1px solid var(--line);color:var(--ink);font-weight:700;font-size:12px;border-radius:7px;padding:3px 9px;font-family:ui-monospace,Menlo,Consolas,monospace}
+.screen-head h3{font-size:15.5px}
+.screen-head .rt{font-family:ui-monospace,Menlo,Consolas,monospace;font-size:11px;color:var(--accent);background:#eef2fb;border:1px solid #d8e1f6;border-radius:6px;padding:2px 8px}
+.screen-head .ds{color:var(--ink3);font-size:11.5px;margin-left:auto;text-align:right;max-width:46%}
+/* ---------- 应用窗口线框 ---------- */
+.win{border:1.5px solid #aab4c6;border-radius:10px;overflow:hidden;background:#fff;display:grid;grid-template-columns:140px 1fr}
+.sb{background:var(--side);color:#cdd4e4;padding:11px 9px;font-size:11px;display:flex;flex-direction:column;gap:3px}
+.sb-brand{display:flex;align-items:center;gap:7px;padding:4px 4px 11px;border-bottom:1px dashed var(--side-line);margin-bottom:8px}
+.sb-logo{width:24px;height:24px;border-radius:7px;background:var(--side2);border:1px solid var(--side-line);flex:none;display:flex;align-items:center;justify-content:center;color:#dbe1ee;font-size:10px}
+.sb-brand .t{flex:1}
+.sb-brand .t i{display:block;height:6px;width:34px;background:#cfd6e6;border-radius:2px;margin-bottom:3px}
+.sb-brand .t i:last-child{width:22px;height:4px;background:#8b95b3}
+.sb-gl{font-size:9.5px;color:#8f99b6;letter-spacing:1px;padding:7px 5px 3px}
+.sb-it{display:flex;align-items:center;gap:7px;padding:5px 6px;border-radius:6px;color:#c2cadc}
+.sb-it .sq{width:13px;height:13px;border:1px solid #97a1bf;border-radius:3px;flex:none}
+.sb-it .wl{flex:1;height:5px;background:#9aa4c2;border-radius:2px}
+.sb-it.on{background:var(--side2)}
+.sb-it.on .wl{background:#eef1f8}
+.sb-it.on::before{content:"";width:3px;height:14px;background:#dbe1ee;border-radius:2px;margin-left:-3px;margin-right:1px}
+.sb-foot{margin-top:auto;font-size:9px;color:#7f89a8;padding:9px 5px 2px;border-top:1px dashed var(--side-line)}
+/* 右侧列 */
+.col{display:flex;flex-direction:column;min-width:0;background:var(--canvas)}
+.tb{height:42px;background:#fff;border-bottom:1px solid var(--line);display:flex;align-items:center;gap:9px;padding:0 13px;flex:none}
+.tb .tt{font-size:13px;font-weight:700;color:var(--ink)}
+.tb .cb{font-size:10px;color:var(--ink3)}
+.tb .r{margin-left:auto;display:flex;gap:6px;align-items:center}
+.canvas{flex:1;padding:11px;display:flex;flex-direction:column;gap:10px;min-height:0}
+/* ---------- 通用线框元件 ---------- */
+.b{background:var(--fill);border:1px dashed #b9c2d4;border-radius:7px;padding:8px 10px;color:var(--ink2);font-size:11px}
+.bs{background:#fff;border:1px solid var(--line);border-radius:7px;padding:8px 10px}
+.cardx{background:#fff;border:1px solid var(--line);border-radius:8px;padding:9px 10px}
+.sec-t{display:flex;align-items:center;gap:8px;font-size:12px;font-weight:700;color:var(--ink);margin-bottom:2px}
+.sec-t .bar{width:3px;height:12px;background:var(--pri);border-radius:2px}
+.sec-t .more{margin-left:auto;font-weight:400;font-size:10.5px;color:var(--ink3)}
+.ln{height:6px;background:#d8deea;border-radius:3px;margin:4px 0}
+.ln.t{background:#c3cbdb;height:7px}
+.w20{width:20%}.w30{width:30%}.w40{width:40%}.w50{width:50%}.w60{width:60%}.w70{width:70%}.w80{width:80%}.w90{width:90%}.w100{width:100%}
+.btnx{display:inline-flex;align-items:center;gap:5px;border:1px solid #9aa6bc;background:#fff;color:var(--ink2);border-radius:6px;padding:3px 10px;font-size:11px;white-space:nowrap}
+.btnx.pri{background:var(--pri);border-color:var(--pri);color:#fff}
+.btnx.dan{border-color:#cf9b9b;color:var(--dan)}
+.btnx.ghost{border-style:dashed;background:var(--fill2)}
+.ico{width:12px;height:12px;border:1.3px solid currentColor;border-radius:3px;display:inline-block;flex:none;position:relative}
+.ico.circ{border-radius:50%}
+.btnx .ico{width:10px;height:10px}
+.inx{background:#fff;border:1px solid var(--line);border-radius:6px;padding:6px 9px;color:#a3acbd;font-size:10.5px;display:flex;align-items:center;gap:7px}
+.inx .ico{width:11px;height:11px}
+textarea.tax{background:#fff;border:1px solid var(--line);border-radius:6px;padding:8px 10px;color:#a3acbd;font-size:10.5px;width:100%;min-height:64px}
+.tagx{display:inline-flex;align-items:center;border:1px solid var(--line);background:var(--fill2);border-radius:11px;padding:1px 9px;font-size:10px;color:var(--ink2)}
+.tagx.dark{background:var(--fill);border-color:#c2cbdb}
+.pillx{border:1px solid var(--line);background:#fff;border-radius:14px;padding:3px 12px;font-size:10.5px;color:var(--ink2)}
+.pillx.on{background:var(--pri);border-color:var(--pri);color:#fff}
+.tog{width:26px;height:15px;border:1px solid #aeb8c9;border-radius:9px;background:#e6eaf2;position:relative;flex:none}
+.tog::after{content:"";position:absolute;top:1px;left:1px;width:11px;height:11px;border-radius:50%;background:#fff;border:1px solid #aeb8c9}
+.tog.on{background:var(--pri);border-color:var(--pri)}
+.tog.on::after{left:12px;border-color:var(--pri)}
+.rad{width:12px;height:12px;border:1.3px solid #9aa6bc;border-radius:50%;flex:none;display:inline-block}
+.rad.on{border:3px solid var(--pri)}
+.chk{width:12px;height:12px;border:1.3px solid #9aa6bc;border-radius:3px;flex:none;display:inline-block}
+.chk.on{background:var(--pri);border-color:var(--pri)}
+.avatar{width:26px;height:26px;border-radius:8px;background:var(--fill);border:1px solid #c2cbdb;flex:none;display:flex;align-items:center;justify-content:center;font-size:10px;color:var(--ink3)}
+.avatar.circ{border-radius:50%}
+.g2{display:grid;grid-template-columns:1fr 1fr;gap:9px}
+.g3{display:grid;grid-template-columns:repeat(3,1fr);gap:9px}
+.g4{display:grid;grid-template-columns:repeat(4,1fr);gap:9px}
+.fx{display:flex;gap:8px;align-items:center}
+.fcol{display:flex;flex-direction:column;gap:7px}
+.sp{flex:1}
+.note{border-left:3px solid var(--line);padding:2px 0 2px 9px;color:var(--note);font-size:10.5px;line-height:1.55}
+.note.ac{border-color:var(--accent)}
+.kv{font-size:10.5px;color:var(--ink3)}
+.kv b{color:var(--ink2);font-weight:600}
+/* 表格线框 */
+.tw{border:1px solid var(--line);border-radius:8px;overflow:hidden;background:#fff}
+.tw-h,.tw-r{display:grid;align-items:center;font-size:10.5px;padding:0 8px}
+.tw-h{height:30px;background:var(--fill);color:var(--ink2);font-weight:600;border-bottom:1px solid var(--line)}
+.tw-r{min-height:34px;border-bottom:1px solid var(--line2);color:var(--ink3)}
+.tw-r:last-child{border-bottom:0}
+.tw-c{display:flex;align-items:center;gap:6px}
+.cell-line{height:5px;background:#d8deea;border-radius:2px}
+/* 手机框 */
+.phone{border:2px solid #9aa6bc;border-radius:16px;padding:8px;background:#fff;display:flex;flex-direction:column;gap:7px}
+/* 步骤条 */
+.stepperx{display:flex;align-items:center;gap:4px;margin:4px 0 10px}
+.stp{display:flex;align-items:center;gap:6px;font-size:10.5px;color:var(--ink3)}
+.stp .dot{width:19px;height:19px;border-radius:50%;border:1.5px solid #aeb8c9;background:#fff;display:flex;align-items:center;justify-content:center;font-size:10px;color:var(--ink3)}
+.stp.done .dot,.stp.cur .dot{background:var(--pri);border-color:var(--pri);color:#fff}
+.stp.cur{color:var(--ink);font-weight:600}
+.stline{flex:1;height:1.5px;background:#cfd6e2;min-width:18px}
+.stline.done{background:var(--pri)}
+/* 弹层 */
+.modal-stage{border:1.5px dashed #aab4c6;border-radius:10px;background:#dde2ec;padding:22px 16px;display:flex;justify-content:center;align-items:flex-start}
+.mcard{width:100%;max-width:520px;background:#fff;border:1px solid var(--line);border-radius:12px;box-shadow:0 8px 26px rgba(40,50,75,.16);overflow:hidden}
+.mhead{display:flex;align-items:center;padding:12px 15px;border-bottom:1px solid var(--line2);font-weight:700;font-size:12.5px}
+.mhead .x{margin-left:auto;width:16px;height:16px;border:1px solid #aeb8c9;border-radius:4px;position:relative}
+.mbody{padding:14px 15px;display:flex;flex-direction:column;gap:10px}
+.mfoot{display:flex;justify-content:flex-end;gap:8px;padding:11px 15px;border-top:1px solid var(--line2);background:var(--fill2)}
+.modal-note{font-size:10.5px;color:var(--note);text-align:center;margin-top:7px}
+/* 站点关系图 */
+.flow{background:#fff;border:1px solid var(--line2);border-radius:10px;padding:16px}
+.fnode{border:1px solid var(--line);background:var(--fill2);border-radius:8px;padding:7px 11px;font-size:11px;text-align:center;min-width:96px}
+.fnode.main{background:var(--pri);color:#fff;border-color:var(--pri);font-weight:600}
+.fnode small{display:block;font-size:9.5px;opacity:.75;font-family:ui-monospace,monospace;margin-top:2px}
+.farrow{color:var(--ink3);font-size:15px;flex:none}
+.frow{display:flex;align-items:center;gap:8px;flex-wrap:wrap}
+.ftree{display:flex;flex-direction:column;gap:12px}
+/* 标注小徽标 */
+.badge{font-size:9.5px;border:1px solid #c2cbdb;background:var(--fill2);color:var(--ink2);border-radius:5px;padding:0 5px;line-height:16px;height:16px}
+.toplink{position:fixed;right:22px;bottom:22px;background:var(--ink);color:#fff;border-radius:20px;padding:8px 14px;font-size:12px;text-decoration:none;opacity:.85;z-index:50}
+.foot-note{color:var(--ink3);font-size:11.5px;text-align:center;margin-top:30px;line-height:1.8}
+</style>
+</head>
+<body>
+<div class="wrap">
+
+  <!-- ============ 封面 ============ -->
+  <div class="cover">
+    <h1>影源 · 企业智能创作平台　全页面线框原型</h1>
+    <div class="sub">低保真 Wireframe：用于确认页面结构、区块划分与跳转关系，不代表最终视觉样式（配色 / 字号 / 间距以高保真稿为准）。</div>
+    <div class="sub">依据现有单文件应用的真实代码逐屏还原：统一应用外壳 + 10 个路由页面 + 11 个弹层 / 状态。</div>
+    <div class="meta">
+      <span class="chip">灰阶线框</span>
+      <span class="chip">中文标注</span>
+      <span class="chip">无 emoji，图标以方框占位</span>
+      <span class="chip">深色块＝侧栏，深灰按钮＝主操作，虚线块＝可填内容 / 占位区</span>
+    </div>
+  </div>
+
+  <!-- ============ 目录 ============ -->
+  <div class="toc">
+    <h3>目录</h3>
+    <div class="toc-grid">
+      <a href="#legend"><b>00</b>图例与全局外壳</a>
+      <a href="#sitemap"><b>01</b>页面跳转关系图</a>
+      <a href="#p1"><b>P1</b>企业智体中心</a>
+      <a href="#p2"><b>P2</b>AI 写作工作台</a>
+      <a href="#p3"><b>P3</b>编辑智体</a>
+      <a href="#p4"><b>P4</b>发布智体</a>
+      <a href="#p5"><b>P5</b>智体对话</a>
+      <a href="#p6"><b>P6</b>小影 AI</a>
+      <a href="#p7"><b>P7</b>探文智述·文档库</a>
+      <a href="#p8"><b>P8</b>文档问答</a>
+      <a href="#p9"><b>P9</b>AI 文档</a>
+      <a href="#p10"><b>P10</b>公文范文库</a>
+      <a href="#m1"><b>M1</b>创建 / 编辑智体</a>
+      <a href="#m2"><b>M2</b>提示词优化</a>
+      <a href="#m3"><b>M3</b>步骤写作向导</a>
+      <a href="#m4"><b>M4</b>导出文档</a>
+      <a href="#m5"><b>M5</b>勾选校对规则</a>
+      <a href="#m6"><b>M6</b>添加文档</a>
+      <a href="#m7"><b>M7</b>选择文档</a>
+      <a href="#m8"><b>M8</b>范文详情</a>
+      <a href="#m9"><b>M9-M11</b>重命名 / 确认 / Toast</a>
+    </div>
+  </div>
+
+  <!-- ============ 图例 + 全局外壳 ============ -->
+  <div class="part-title" id="legend"><span class="n">00</span><h2>图例与全局应用外壳</h2><span class="d">所有页面共用同一套侧栏 + 顶栏 + 主滚动区</span></div>
+
+  <div class="screen">
+    <div class="screen-head"><span class="pid">LEGEND</span><h3>线框元件图例</h3><span class="ds">下文所有屏幕中出现的元件含义</span></div>
+    <div class="lg-grid">
+      <div class="lg-item"><span class="btnx pri"><span class="ico"></span>主按钮</span><span>深色填充＝页面主操作</span></div>
+      <div class="lg-item"><span class="btnx">次按钮</span><span>描边＝次要操作</span></div>
+      <div class="lg-item"><span class="btnx dan">危险按钮</span><span>红字＝删除 / 清空</span></div>
+      <div class="lg-item"><span class="inx"><span class="ico"></span>输入框占位提示</span></div>
+      <div class="lg-item"><span class="tagx dark">标签</span><span class="tagx">状态标签</span></div>
+      <div class="lg-item"><span class="pillx">单选项</span><span class="pillx on">选中</span></div>
+      <div class="lg-item"><span class="tog"></span><span class="tog on"></span><span>开关 关 / 开</span></div>
+      <div class="lg-item"><span class="rad"></span><span class="rad on"></span><span>单选框</span></div>
+      <div class="lg-item"><span class="chk"></span><span class="chk on"></span><span>复选框</span></div>
+      <div class="lg-item"><span class="avatar">字</span><span>智体头像（首字 / 渐变）</span></div>
+      <div class="lg-item"><span class="ico"></span><span>图标位（实际为线性 SVG）</span></div>
+      <div class="lg-item"><span class="ln w60"></span><span>灰条＝一行文本</span></div>
+    </div>
+  </div>
+
+  <div class="screen">
+    <div class="screen-head"><span class="pid">SHELL</span><h3>全局应用外壳（10 个页面通用）</h3><span class="ds">侧栏固定 224px，顶栏固定 58px，其余为主内容滚动区</span></div>
+    <div class="win" style="grid-template-columns:150px 1fr;min-height:330px">
+      <div class="sb">
+        <div class="sb-brand"><span class="sb-logo">影</span><span class="t"><i></i><i></i></span></div>
+        <div class="sb-gl">工作台</div>
+        <div class="sb-it on"><span class="sq"></span><span class="wl"></span></div>
+        <div class="sb-it"><span class="sq"></span><span class="wl"></span></div>
+        <div class="sb-it"><span class="sq"></span><span class="wl"></span></div>
+        <div class="sb-gl">使用过的智体（动态）</div>
+        <div class="sb-it"><span class="avatar" style="width:16px;height:16px;border-radius:5px;font-size:8px">字</span><span class="wl"></span></div>
+        <div class="sb-it"><span class="avatar" style="width:16px;height:16px;border-radius:5px;font-size:8px">字</span><span class="wl"></span></div>
+        <div class="sb-gl">资源</div>
+        <div class="sb-it"><span class="sq"></span><span class="wl"></span></div>
+        <div class="sb-it"><span class="sq"></span><span class="wl"></span></div>
+        <div class="sb-foot">企业智能创作平台 · v0.2</div>
+      </div>
+      <div class="col">
+        <div class="tb">
+          <span class="tt">页面标题</span><span class="cb">面包屑 / 上级</span>
+          <span class="r"><span class="btnx">次操作</span><span class="btnx pri"><span class="ico"></span>主操作</span></span>
+        </div>
+        <div class="canvas">
+          <div class="b" style="flex:1;display:flex;align-items:center;justify-content:center;color:var(--ink3)">
+            主内容滚动区（各页面不同，见 P1–P10）　·　浅灰底，内容为白色卡片
+          </div>
+        </div>
+      </div>
+    </div>
+    <div class="note ac" style="margin-top:11px">侧栏固定 5 个一级入口：工作台＝企业智体 / 探文智述 / 小影 AI；资源＝AI 文档 / 公文范文。“使用过的智体”为系统动态生成的二级快捷项，悬浮出现“更多 / 删除”。</div>
+  </div>
+
+  <!-- ============ 站点关系图 ============ -->
+  <div class="part-title" id="sitemap"><span class="n">01</span><h2>页面跳转关系图</h2><span class="d">侧栏一级入口与各页面之间的主要流向</span></div>
+  <div class="flow">
+    <div class="ftree">
+      <div class="frow">
+        <span class="fnode main">侧栏一级导航</span>
+      </div>
+      <div class="frow" style="padding-left:26px">
+        <span class="fnode">企业智体中心<small>#/center</small></span>
+        <span class="farrow">→</span><span class="fnode">智体对话<small>#/agent</small></span>
+        <span class="farrow">｜创建/卡片编辑→</span><span class="fnode">编辑智体<small>#/agent-edit</small></span>
+        <span class="farrow">→</span><span class="fnode">发布智体<small>#/publish</small></span>
+      </div>
+      <div class="frow" style="padding-left:26px">
+        <span class="fnode">探文智述<small>#/docs</small></span>
+        <span class="farrow">→ 行内“问答” -&gt;</span><span class="fnode">文档问答<small>#/doc-qa</small></span>
+      </div>
+      <div class="frow" style="padding-left:26px">
+        <span class="fnode">小影 AI<small>#/xiaoying</small></span>
+        <span class="farrow">⇢ 写作台内嵌同一能力</span>
+        <span class="fnode">AI 写作<small>#/writing</small></span>
+        <span class="farrow">⇠ 结果导入 / 范文套用</span>
+      </div>
+      <div class="frow" style="padding-left:26px">
+        <span class="fnode">AI 文档<small>#/ai-doc</small></span>
+        <span class="farrow">→ 结果导入写作区 -&gt;</span><span class="fnode">AI 写作<small>#/writing</small></span>
+        <span class="farrow" style="margin-left:20px">｜</span>
+        <span class="fnode">公文范文<small>#/templates</small></span>
+        <span class="farrow">→ 一键套用 -&gt;</span><span class="fnode">AI 写作<small>#/writing</small></span>
+      </div>
+    </div>
+  </div>
+
+<!-- ================= A. 十个路由页面 ================= -->
+<div class="part-title"><span class="n">A</span><h2>路由页面（10 屏）</h2><span class="d">每屏均含统一侧栏与顶栏</span></div>
+
+<!-- ===== P1 企业智体中心 ===== -->
+<div class="screen" id="p1">
+  <div class="screen-head">
+    <span class="pid">P1</span><h3>企业智体中心</h3><span class="rt">#/center</span>
+    <span class="ds">登录后默认首页。纵向三段：推荐智体 → 发现更多（分类筛选）→ 公文范文。</span>
+  </div>
+  <div class="win" style="min-height:560px">
+    <div class="sb">
+      <div class="sb-brand"><span class="sb-logo">影</span><span class="t"><i></i><i></i></span></div>
+      <div class="sb-gl">工作台</div>
+      <div class="sb-it on"><span class="sq"></span><span class="wl" style="background:#eef1f8"></span></div>
+      <div class="sb-it"><span class="sq"></span><span class="wl"></span></div>
+      <div class="sb-it"><span class="sq"></span><span class="wl"></span></div>
+      <div class="sb-gl">使用过的智体</div>
+      <div class="sb-it"><span class="avatar" style="width:16px;height:16px;border-radius:5px;font-size:8px">写</span><span class="wl"></span></div>
+      <div class="sb-gl">资源</div>
+      <div class="sb-it"><span class="sq"></span><span class="wl"></span></div>
+      <div class="sb-it"><span class="sq"></span><span class="wl"></span></div>
+      <div class="sb-foot">企业智能创作平台 · v0.2</div>
+    </div>
+    <div class="col">
+      <div class="tb">
+        <span class="tt">企业智体</span><span class="cb">智体中心</span>
+        <span class="r"><span class="btnx pri"><span class="ico"></span>创建智体</span></span>
+      </div>
+      <div class="canvas">
+        <!-- 推荐智体 -->
+        <div class="sec-t"><span class="bar"></span>推荐智体</div>
+        <div class="g3">
+          <div class="cardx fx"><span class="avatar">写</span><div class="fcol" style="gap:3px;flex:1"><b style="font-size:11.5px">智体名称</b><span class="ln w80"></span></div></div>
+          <div class="cardx fx"><span class="avatar">述</span><div class="fcol" style="gap:3px;flex:1"><b style="font-size:11.5px">智体名称</b><span class="ln w70"></span></div></div>
+          <div class="cardx fx"><span class="avatar">影</span><div class="fcol" style="gap:3px;flex:1"><b style="font-size:11.5px">智体名称</b><span class="ln w75"></span></div></div>
+        </div>
+        <!-- 发现更多 -->
+        <div class="sec-t" style="margin-top:4px"><span class="bar"></span>发现更多</div>
+        <div class="fx" style="gap:6px;flex-wrap:wrap">
+          <span class="pillx on">全部</span><span class="pillx">我的智体</span><span class="pillx">党政媒体</span><span class="pillx">营销媒体</span><span class="pillx">企业应用</span><span class="kv" style="margin-left:4px">分类 Tabs（横向，可切换）</span>
+        </div>
+        <div class="g3">
+          <div class="cardx fcol" style="gap:5px">
+            <div class="fx"><span class="avatar">名</span><b style="font-size:11.5px">智体名称</b><span class="tagx">草稿</span><span class="sp"></span><span class="ico"></span><span class="ico"></span></div>
+            <span class="ln w90"></span><span class="ln w60"></span>
+            <span class="kv">最近编辑 12:30　·　悬浮显示编辑 / 删除</span>
+          </div>
+          <div class="cardx fcol" style="gap:5px">
+            <div class="fx"><span class="avatar">名</span><b style="font-size:11.5px">市场智体</b><span class="tagx dark">党政媒体</span></div>
+            <span class="ln w80"></span><span class="ln w50"></span>
+            <span class="kv">来自 · 党政媒体</span>
+          </div>
+          <div class="cardx fcol" style="gap:5px">
+            <div class="fx"><span class="avatar">名</span><b style="font-size:11.5px">智体名称</b><span class="tagx" style="border-color:#9db99a;color:#4d7a4a">已发布</span></div>
+            <span class="ln w85"></span><span class="ln w55"></span>
+            <span class="kv">最近编辑 09:12</span>
+          </div>
+        </div>
+        <!-- 公文范文 -->
+        <div class="sec-t" style="margin-top:4px"><span class="bar"></span>公文范文<span class="more">进入范文库 →</span></div>
+        <div class="g2">
+          <div class="cardx fx"><span class="avatar" style="border-radius:6px"><span class="ico"></span></span><div style="flex:1"><b style="font-size:11.5px">范文名称</b><div class="ln w70" style="margin-top:3px"></div></div></div>
+          <div class="cardx fx"><span class="avatar" style="border-radius:6px"><span class="ico"></span></span><div style="flex:1"><b style="font-size:11.5px">范文名称</b><div class="ln w60" style="margin-top:3px"></div></div></div>
+        </div>
+      </div>
+    </div>
+  </div>
+  <div class="note" style="margin-top:10px">交互：点任意智体卡片进入对应对话页（P5）；“创建智体”弹出 M1；我的智体卡片悬浮出现编辑（→P3）/ 删除（二次确认 M10）；空分类显示空状态。</div>
+</div>
+
+<!-- ===== P2 AI 写作工作台 ===== -->
+<div class="screen" id="p2">
+  <div class="screen-head">
+    <span class="pid">P2</span><h3>AI 写作工作台</h3><span class="rt">#/writing</span>
+    <span class="ds">左侧富文本编辑器 + 右侧 7 页签 AI 面板（可整体收起为竖条）。</span>
+  </div>
+  <div class="win" style="grid-template-columns:140px 1fr;min-height:600px">
+    <div class="sb">
+      <div class="sb-brand"><span class="sb-logo">影</span><span class="t"><i></i><i></i></span></div>
+      <div class="sb-gl">工作台</div>
+      <div class="sb-it"><span class="sq"></span><span class="wl"></span></div>
+      <div class="sb-it"><span class="sq"></span><span class="wl"></span></div>
+      <div class="sb-it"><span class="sq"></span><span class="wl"></span></div>
+      <div class="sb-gl">资源</div>
+      <div class="sb-it"><span class="sq"></span><span class="wl"></span></div>
+      <div class="sb-it"><span class="sq"></span><span class="wl"></span></div>
+      <div class="sb-foot">企业智能创作平台 · v0.2</div>
+    </div>
+    <div class="col">
+      <div class="tb">
+        <span class="tt">AI 写作</span><span class="cb">企业智体 / 推荐智体</span>
+        <span class="r"><span class="btnx"><span class="ico"></span>载入示例文稿</span><span class="btnx"><span class="ico"></span>清空</span></span>
+      </div>
+      <!-- 工作区：左右 -->
+      <div style="flex:1;display:grid;grid-template-columns:1fr 268px;min-height:0">
+        <!-- 左：编辑器 -->
+        <div style="border-right:1px solid var(--line);display:flex;flex-direction:column;min-width:0;background:#fff">
+          <!-- 工具条 -->
+          <div style="border-bottom:1px solid var(--line);padding:6px 8px;display:flex;flex-wrap:wrap;gap:4px;align-items:center">
+            <span class="inx" style="padding:3px 6px;font-size:10px">正文 ▾</span>
+            <span class="inx" style="padding:3px 6px;font-size:10px">字号 ▾</span>
+            <span style="width:1px;height:16px;background:var(--line)"></span>
+            <span class="btnx" style="padding:2px 6px">B</span><span class="btnx" style="padding:2px 6px;font-style:italic">I</span><span class="btnx" style="padding:2px 6px;text-decoration:underline">U</span><span class="btnx" style="padding:2px 6px;text-decoration:line-through">S</span>
+            <span style="width:1px;height:16px;background:var(--line)"></span>
+            <span class="btnx" style="padding:2px 6px">• 列</span><span class="btnx" style="padding:2px 6px">1.列</span>
+            <span style="width:1px;height:16px;background:var(--line)"></span>
+            <span class="btnx" style="padding:2px 6px">对齐</span><span class="btnx" style="padding:2px 6px">缩进</span><span class="btnx" style="padding:2px 6px">清除</span>
+            <span class="btnx" style="padding:2px 6px">↶</span><span class="btnx" style="padding:2px 6px">↷</span>
+            <span class="sp"></span>
+            <span class="btnx" style="padding:3px 7px">复制全文</span><span class="btnx" style="padding:3px 7px">导出 ▾</span><span class="btnx pri" style="padding:3px 7px">保存到记录</span>
+          </div>
+          <!-- 编辑区 -->
+          <div style="flex:1;position:relative;padding:14px;background:
+            repeating-linear-gradient(#fff,#fff 23px,#f0f3f9 23px,#f0f3f9 24px)">
+            <div style="border:1px dashed var(--line);border-radius:8px;height:100%;padding:12px;color:var(--ink3);font-size:11px;position:relative">
+              正文编辑区（contenteditable，占位提示：请在此输入内容，选择右侧 AI 功能辅助写作）
+              <div class="ln w40" style="margin-top:14px"></div><div class="ln w90"></div><div class="ln w85"></div><div class="ln w70"></div>
+              <!-- 选中浮动条 -->
+              <div style="position:absolute;right:14px;top:96px;display:flex;gap:0;box-shadow:0 3px 10px rgba(40,50,75,.15);border-radius:6px;overflow:hidden">
+                <span class="btnx" style="border-radius:0;border:0;background:var(--pri);color:#fff">AI 续写</span>
+                <span class="btnx" style="border-radius:0;border:0;background:var(--pri);color:#fff">AI 润色</span>
+              </div>
+              <div class="kv" style="position:absolute;right:14px;top:128px">选中文字时浮出</div>
+            </div>
+          </div>
+          <!-- 底部状态 -->
+          <div style="border-top:1px solid var(--line);padding:5px 12px;display:flex;gap:16px" class="kv"><span>字数：0 字</span><span>已选 0 字</span></div>
+        </div>
+        <!-- 右：AI 面板 -->
+        <div style="display:flex;flex-direction:column;background:#fff;min-width:0">
+          <div style="display:flex;flex-wrap:wrap;gap:2px;padding:7px 7px 0;border-bottom:1px solid var(--line)">
+            <span class="pillx" style="font-size:9.5px;padding:2px 7px">历史记录</span>
+            <span class="pillx on" style="font-size:9.5px;padding:2px 7px">步骤写作</span>
+            <span class="pillx" style="font-size:9.5px;padding:2px 7px">标题写作</span>
+            <span class="pillx" style="font-size:9.5px;padding:2px 7px">AI 校对</span>
+            <span class="pillx" style="font-size:9.5px;padding:2px 7px">AI 续写</span>
+            <span class="pillx" style="font-size:9.5px;padding:2px 7px">AI 润色</span>
+            <span class="pillx" style="font-size:9.5px;padding:2px 7px">小影 AI</span>
+            <span class="btnx" style="margin-left:auto;padding:1px 5px;font-size:9px">收起</span>
+          </div>
+          <div style="flex:1;padding:12px;display:flex;flex-direction:column;gap:9px;background:var(--canvas)">
+            <div class="note">默认页签＝步骤写作。其余页签内容：历史记录（搜索+按日期分组列表）、标题写作（2 输入+候选标题）、AI 校对（规则+问题清单）、续写 / 润色（基于选中文字）、小影 AI（内嵌对话）。</div>
+            <div class="stepperx">
+              <div class="stp cur"><span class="dot">1</span>基础信息</div><span class="stline"></span>
+              <div class="stp"><span class="dot">2</span>摘要信息</div><span class="stline"></span>
+              <div class="stp"><span class="dot">3</span>开始写作</div>
+            </div>
+            <span class="btnx pri" style="justify-content:center;padding:8px">打开步骤写作（弹 M3 向导）</span>
+            <div class="b" style="flex:1;color:var(--ink3)">步骤 3 生成正文时，此区域显示流式正文 + “放弃生成 / 返回上一步 / 重新生成”</div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+  <div class="note" style="margin-top:10px">右侧面板可整体收起为竖排图标条；“导出”弹出 M4；草稿自动保存到本地，刷新不丢失；步骤向导详见 M3。</div>
+</div>
+
+<!-- ===== P3 编辑智体 ===== -->
+<div class="screen" id="p3">
+  <div class="screen-head">
+    <span class="pid">P3</span><h3>编辑智体（编排 + 预览调试）</h3><span class="rt">#/agent-edit?id=</span>
+    <span class="ds">左侧编排人设，右侧手机形态实时预览、可直接调试对话。输入 700ms 自动保存。</span>
+  </div>
+  <div class="win" style="min-height:560px">
+    <div class="sb">
+      <div class="sb-brand"><span class="sb-logo">影</span><span class="t"><i></i><i></i></span></div>
+      <div class="sb-gl">工作台</div>
+      <div class="sb-it on"><span class="sq"></span><span class="wl" style="background:#eef1f8"></span></div>
+      <div class="sb-it"><span class="sq"></span><span class="wl"></span></div>
+      <div class="sb-it"><span class="sq"></span><span class="wl"></span></div>
+      <div class="sb-gl">资源</div>
+      <div class="sb-it"><span class="sq"></span><span class="wl"></span></div>
+      <div class="sb-it"><span class="sq"></span><span class="wl"></span></div>
+      <div class="sb-foot">企业智能创作平台 · v0.2</div>
+    </div>
+    <div class="col">
+      <div class="tb">
+        <span class="tt">编辑智体</span><span class="cb">智体名称</span>
+        <span class="r"><span class="tagx">草稿</span><span class="kv">自动保存于 12:30</span><span class="btnx pri">发布</span></span>
+      </div>
+      <div style="flex:1;display:grid;grid-template-columns:1fr 250px;min-height:0">
+        <!-- 左编排 -->
+        <div class="canvas" style="border-right:1px solid var(--line)">
+          <div class="cardx fx" style="padding:11px">
+            <span class="avatar" style="width:38px;height:38px;border-radius:10px">名</span>
+            <div style="flex:1"><b style="font-size:12.5px">智体名称</b><div class="ln w55" style="margin-top:3px"></div></div>
+            <span class="btnx"><span class="ico"></span>编辑</span>
+          </div>
+          <div class="cardx fcol" style="gap:7px">
+            <div class="fx"><b style="font-size:12px">人设与回复逻辑 <span style="color:var(--dan)">*</span></b><span class="sp"></span><span class="btnx"><span class="ico"></span>优化（弹 M2）</span></div>
+            <div class="tax" style="min-height:96px">大文本域：用自然语言描述人物设定、功能、工作流程……</div>
+          </div>
+          <div class="cardx fcol" style="gap:8px">
+            <div class="fx"><b style="font-size:12px">高级设置</b><span class="sp"></span><span class="btnx"><span class="ico"></span>自动生成开场白与预置问题</span></div>
+            <div><div class="kv" style="margin-bottom:4px">开场白文案</div><div class="tax" style="min-height:48px">智体首次进入对话时的开场白……</div></div>
+            <div><div class="kv" style="margin-bottom:4px">预置问题（超过 3 条随机展示 3 条）</div>
+              <div class="fcol" style="gap:6px">
+                <div class="inx"><span style="flex:1">预置问题 1</span><span class="ico"></span></div>
+                <div class="inx"><span style="flex:1">预置问题 2</span><span class="ico"></span></div>
+                <div class="inx"><span style="flex:1">预置问题 3</span><span class="ico"></span></div>
+                <span class="btnx ghost" style="justify-content:center">＋ 添加预置问题</span>
+              </div>
+            </div>
+          </div>
+        </div>
+        <!-- 右预览 -->
+        <div style="background:var(--canvas);padding:11px;display:flex;flex-direction:column;gap:8px">
+          <div class="fx"><b style="font-size:12px">预览与调试</b><span class="sp"></span><span class="kv"><span class="ico"></span> 清除</span></div>
+          <div class="phone" style="flex:1">
+            <div class="fx" style="border-bottom:1px solid var(--line2);padding-bottom:6px"><span class="avatar" style="width:28px;height:28px">名</span><b style="font-size:11.5px">智体名称</b></div>
+            <div style="align-self:flex-start;max-width:85%;background:var(--fill);border-radius:9px;padding:6px 9px;font-size:10px;color:var(--ink2)"><div class="ln w40"></div><div class="ln w60"></div></div>
+            <div style="align-self:flex-end;max-width:85%;background:var(--pri);color:#fff;border-radius:9px;padding:6px 9px;font-size:10px">我发送的调试内容</div>
+            <div style="display:flex;flex-wrap:wrap;gap:5px"><span class="tagx">预置问题</span><span class="tagx">预置问题</span><span class="tagx">预置问题</span></div>
+            <div class="sp"></div>
+            <div class="inx" style="border-radius:18px"><span style="flex:1">输入调试内容，回车发送</span><span class="avatar circ" style="width:20px;height:20px;background:var(--pri);border-color:var(--pri);color:#fff"><svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linejoin="round" stroke-linecap="round"><path d="M22 2 11 13M22 2l-7 20-4-9-9-4 20-7z"/></svg></span></div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+  <div class="note" style="margin-top:10px">“编辑”头部信息弹出 M1（编辑态）；“优化”对人设文本做流式润色（M2）；“发布”进入 P4。</div>
+</div>
+
+<!-- ===== P4 发布智体 ===== -->
+<div class="screen" id="p4">
+  <div class="screen-head">
+    <span class="pid">P4</span><h3>发布智体</h3><span class="rt">#/publish?id=</span>
+    <span class="ds">窄栏单卡片表单（最大宽 760），发布成功回到编辑页并标记“已发布”。</span>
+  </div>
+  <div class="win" style="min-height:480px">
+    <div class="sb">
+      <div class="sb-brand"><span class="sb-logo">影</span><span class="t"><i></i><i></i></span></div>
+      <div class="sb-gl">工作台</div>
+      <div class="sb-it on"><span class="sq"></span><span class="wl" style="background:#eef1f8"></span></div>
+      <div class="sb-it"><span class="sq"></span><span class="wl"></span></div>
+      <div class="sb-it"><span class="sq"></span><span class="wl"></span></div>
+      <div class="sb-gl">资源</div>
+      <div class="sb-it"><span class="sq"></span><span class="wl"></span></div>
+      <div class="sb-it"><span class="sq"></span><span class="wl"></span></div>
+      <div class="sb-foot">企业智能创作平台 · v0.2</div>
+    </div>
+    <div class="col">
+      <div class="tb"><span class="tt">发布智体</span><span class="cb">智体名称</span>
+        <span class="r"><span class="btnx">← 返回编辑</span></span></div>
+      <div class="canvas" style="align-items:center">
+        <div class="cardx fcol" style="gap:14px;max-width:560px;width:100%;margin:6px auto">
+          <div class="fcol" style="gap:6px">
+            <div class="fx"><b style="font-size:12px">发布记录</b><span class="sp"></span><span class="kv">0/2000</span></div>
+            <div class="tax" style="min-height:72px">输入本次版本记录（选填）……</div>
+          </div>
+          <div class="fcol" style="gap:6px">
+            <b style="font-size:12px">可见度</b>
+            <div class="fx" style="gap:8px">
+              <span class="fx" style="gap:5px"><span class="rad on"></span><span class="pillx on">私有智体</span></span>
+              <span class="fx" style="gap:5px"><span class="rad"></span><span class="pillx">公共智体</span></span>
+            </div>
+            <div class="note">私有仅自己可用；公共发布后可在对应分类被其他用户发现。</div>
+          </div>
+          <div class="fcol" style="gap:6px">
+            <b style="font-size:12px">分类</b>
+            <div class="fx" style="gap:8px">
+              <span class="fx" style="gap:5px"><span class="rad on"></span><span class="pillx on">党政媒体</span></span>
+              <span class="fx" style="gap:5px"><span class="rad"></span><span class="pillx">营销媒体</span></span>
+              <span class="fx" style="gap:5px"><span class="rad"></span><span class="pillx">企业应用</span></span>
+            </div>
+          </div>
+          <div class="fx"><span class="sp"></span><span class="btnx pri" style="padding:7px 22px">发布</span></div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- ===== P5 智体对话 ===== -->
+<div class="screen" id="p5">
+  <div class="screen-head">
+    <span class="pid">P5</span><h3>智体对话（对话中状态）</h3><span class="rt">#/agent?id=</span>
+    <span class="ds">左侧多会话历史，右侧消息流 + 输入区。回答逐字流式输出，可复制 / 重新生成。</span>
+  </div>
+  <div class="win" style="min-height:540px">
+    <div class="sb">
+      <div class="sb-brand"><span class="sb-logo">影</span><span class="t"><i></i><i></i></span></div>
+      <div class="sb-gl">工作台</div>
+      <div class="sb-it on"><span class="sq"></span><span class="wl" style="background:#eef1f8"></span></div>
+      <div class="sb-it"><span class="sq"></span><span class="wl"></span></div>
+      <div class="sb-it"><span class="sq"></span><span class="wl"></span></div>
+      <div class="sb-gl">资源</div>
+      <div class="sb-it"><span class="sq"></span><span class="wl"></span></div>
+      <div class="sb-it"><span class="sq"></span><span class="wl"></span></div>
+      <div class="sb-foot">企业智能创作平台 · v0.2</div>
+    </div>
+    <div class="col">
+      <div class="tb"><span class="tt">智体名称</span><span class="cb">企业智体 / 发现更多</span></div>
+      <div style="flex:1;display:grid;grid-template-columns:168px 1fr;min-height:0">
+        <!-- 会话历史 -->
+        <div style="border-right:1px solid var(--line);background:#fff;display:flex;flex-direction:column;padding:9px;gap:8px">
+          <span class="btnx pri" style="justify-content:center;padding:6px">＋ 新建对话</span>
+          <div class="cardx" style="padding:7px 8px;border-color:#b9c2d4;background:var(--fill2)">
+            <div class="fx"><span class="ln t w70" style="margin:0"></span><span class="sp"></span><span class="ico"></span><span class="ico"></span></div>
+          </div>
+          <div class="cardx" style="padding:7px 8px"><div class="ln w80"></div></div>
+          <div class="cardx" style="padding:7px 8px"><div class="ln w60"></div></div>
+          <div class="b" style="font-size:10px;text-align:center;color:var(--ink3)">空态：暂无历史对话</div>
+          <div class="kv" style="margin-top:auto;font-size:9.5px">悬浮会话项出现重命名（M9）/ 删除（M10）</div>
+        </div>
+        <!-- 主聊天区 -->
+        <div style="display:flex;flex-direction:column;min-width:0;background:var(--canvas)">
+          <div class="fx" style="padding:7px 12px;border-bottom:1px solid var(--line);background:#fff;gap:6px">
+            <span class="btnx">≡ 历史记录</span><span class="sp"></span>
+            <span class="btnx">＋ 新建对话</span><span class="btnx dan">■ 停止生成</span>
+          </div>
+          <div style="flex:1;padding:13px;display:flex;flex-direction:column;gap:12px;overflow:hidden">
+            <div class="fx" style="gap:8px;align-items:flex-start"><span class="avatar circ">名</span>
+              <div style="max-width:78%"><div class="kv" style="margin-bottom:3px">智体名称</div><div class="cardx" style="background:var(--fill)"><div class="ln w90"></div><div class="ln w70"></div></div></div></div>
+            <div class="fx" style="gap:8px;align-items:flex-start;flex-direction:row-reverse"><span class="avatar circ" style="background:var(--pri);color:#fff;border-color:var(--pri)">我</span>
+              <div style="max-width:78%"><div class="kv" style="margin-bottom:3px;text-align:right">我</div><div class="cardx" style="background:var(--pri);color:#fff;border-color:var(--pri)"><div style="height:6px;width:150px;background:rgba(255,255,255,.55);border-radius:3px"></div></div></div></div>
+            <div class="fx" style="gap:8px;align-items:flex-start"><span class="avatar circ">名</span>
+              <div style="max-width:78%"><div class="kv" style="margin-bottom:3px">智体名称</div>
+                <div class="cardx" style="background:var(--fill)"><div class="ln w90"></div><div class="ln w80"></div><div class="ln w50"></div></div>
+                <div class="fx" style="gap:8px;margin-top:4px"><span class="btnx" style="font-size:10px;padding:2px 8px">复制</span><span class="btnx" style="font-size:10px;padding:2px 8px">重新生成</span></div>
+              </div></div>
+          </div>
+          <div style="padding:10px 13px;border-top:1px solid var(--line);background:#fff">
+            <div class="inx" style="flex-direction:column;align-items:stretch;gap:5px;padding:8px 10px">
+              <span style="color:var(--ink3);font-size:10.5px">输入你的问题或需求（Shift+Enter 换行），支持写作 / 摘要 / 提纲 / 翻译等</span>
+              <div class="fx"><span class="kv">0/400</span><span class="sp"></span><span class="avatar circ" style="width:24px;height:24px;background:var(--pri);border-color:var(--pri);color:#fff"><svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linejoin="round" stroke-linecap="round"><path d="M22 2 11 13M22 2l-7 20-4-9-9-4 20-7z"/></svg></span></div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- ===== P6 小影 AI ===== -->
+<div class="screen" id="p6">
+  <div class="screen-head">
+    <span class="pid">P6</span><h3>小影 AI（空会话欢迎态）</h3><span class="rt">#/xiaoying</span>
+    <span class="ds">复用 P5 对话框架，差异：工具条多“数据源模型类型 Private / Cloud”切换，首屏为欢迎态。</span>
+  </div>
+  <div class="win" style="min-height:500px">
+    <div class="sb">
+      <div class="sb-brand"><span class="sb-logo">影</span><span class="t"><i></i><i></i></span></div>
+      <div class="sb-gl">工作台</div>
+      <div class="sb-it"><span class="sq"></span><span class="wl"></span></div>
+      <div class="sb-it"><span class="sq"></span><span class="wl"></span></div>
+      <div class="sb-it on"><span class="sq"></span><span class="wl" style="background:#eef1f8"></span></div>
+      <div class="sb-gl">资源</div>
+      <div class="sb-it"><span class="sq"></span><span class="wl"></span></div>
+      <div class="sb-it"><span class="sq"></span><span class="wl"></span></div>
+      <div class="sb-foot">企业智能创作平台 · v0.2</div>
+    </div>
+    <div class="col">
+      <div class="tb"><span class="tt">小影 AI</span><span class="cb">企业智体 / 发现更多</span></div>
+      <div style="flex:1;display:grid;grid-template-columns:168px 1fr;min-height:0">
+        <div style="border-right:1px solid var(--line);background:#fff;padding:9px;display:flex;flex-direction:column;gap:8px">
+          <span class="btnx pri" style="justify-content:center;padding:6px">＋ 新建对话</span>
+          <div class="b" style="flex:1;font-size:10px;color:var(--ink3);text-align:center">会话历史（同 P5）</div>
+        </div>
+        <div style="display:flex;flex-direction:column;min-width:0;background:var(--canvas)">
+          <div class="fx" style="padding:7px 12px;border-bottom:1px solid var(--line);background:#fff;gap:6px">
+            <span class="btnx">≡ 历史记录</span>
+            <span style="display:flex;border:1px solid var(--line);border-radius:7px;overflow:hidden">
+              <span class="pillx on" style="border:0;border-radius:0;font-size:10px">数据源模型类型 - Private</span>
+              <span class="pillx" style="border:0;border-radius:0;font-size:10px">Cloud</span>
+            </span>
+            <span class="sp"></span><span class="btnx">＋ 新建对话</span>
+          </div>
+          <div style="flex:1;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:10px;padding:20px">
+            <span class="avatar" style="width:52px;height:52px;border-radius:15px;font-size:18px">影</span>
+            <b style="font-size:15px">小影 AI</b>
+            <div class="cardx" style="max-width:430px;text-align:center;color:var(--ink3);font-size:10.5px">介绍：提供智能问答与公文创作，支持写作、摘要、提纲、翻译、润色，也可结合不同智体人设回答。</div>
+            <div class="fx" style="gap:8px;flex-wrap:wrap;justify-content:center"><span class="tagx" style="padding:4px 12px">预置问题 1</span><span class="tagx" style="padding:4px 12px">预置问题 2</span><span class="tagx" style="padding:4px 12px">预置问题 3</span></div>
+          </div>
+          <div style="padding:10px 13px;border-top:1px solid var(--line);background:#fff">
+            <div class="inx" style="flex-direction:column;align-items:stretch;gap:5px;padding:8px 10px">
+              <span style="color:var(--ink3);font-size:10.5px">输入你的问题或需求（Shift+Enter 换行）</span>
+              <div class="fx"><span class="kv">0/400</span><span class="sp"></span><span class="avatar circ" style="width:24px;height:24px;background:var(--pri);border-color:var(--pri);color:#fff"><svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linejoin="round" stroke-linecap="round"><path d="M22 2 11 13M22 2l-7 20-4-9-9-4 20-7z"/></svg></span></div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+  <div class="note ac" style="margin-top:10px">P5 与 P6 为同一套对话组件：仅“模型切换条”和欢迎语不同；AI 写作台右侧“小影 AI”页签内嵌同一能力，并多“窗口扩大”跳转。</div>
+</div>
+
+<!-- ===== P7 探文智述 · 文档库 ===== -->
+<div class="screen" id="p7">
+  <div class="screen-head">
+    <span class="pid">P7</span><h3>探文智述 · 文档知识库管理</h3><span class="rt">#/docs</span>
+    <span class="ds">上传带文本层 PDF（≤30M，本地解析），以数据表格管理；行内进入文档问答。</span>
+  </div>
+  <div class="win" style="min-height:520px">
+    <div class="sb">
+      <div class="sb-brand"><span class="sb-logo">影</span><span class="t"><i></i><i></i></span></div>
+      <div class="sb-gl">工作台</div>
+      <div class="sb-it"><span class="sq"></span><span class="wl"></span></div>
+      <div class="sb-it on"><span class="sq"></span><span class="wl" style="background:#eef1f8"></span></div>
+      <div class="sb-it"><span class="sq"></span><span class="wl"></span></div>
+      <div class="sb-gl">资源</div>
+      <div class="sb-it"><span class="sq"></span><span class="wl"></span></div>
+      <div class="sb-it"><span class="sq"></span><span class="wl"></span></div>
+      <div class="sb-foot">企业智能创作平台 · v0.2</div>
+    </div>
+    <div class="col">
+      <div class="tb"><span class="tt">探文智述</span><span class="cb">文档知识库管理</span>
+        <span class="r"><span class="btnx pri"><span class="ico"></span>添加文档</span></span></div>
+      <div class="canvas">
+        <div class="b" style="border-style:solid;border-color:#cdd8ef;background:#f2f5fd;color:#5a6b91">信息条：支持带文本层 PDF（≤30M），仅在本地浏览器提取全文，扫描件将被拦截。</div>
+        <div class="fx" style="gap:8px">
+          <div class="inx" style="flex:1;max-width:300px"><span class="ico"></span>搜索文件名或文件内容</div>
+          <span class="btnx dan"><span class="ico"></span>批量删除</span>
+          <span class="sp"></span>
+          <span class="btnx pri"><span class="ico"></span>添加文档（弹 M6）</span>
+        </div>
+        <div class="tw" style="flex:1">
+          <div class="tw-h" style="grid-template-columns:34px 1fr 62px 48px 96px 96px 48px 104px">
+            <span class="chk" style="width:11px;height:11px"></span><span>文件名称</span><span>大小</span><span>类型</span><span>数据处理</span><span>创建时间 ↕</span><span>启用</span><span>操作</span>
+          </div>
+          <div class="tw-r" style="grid-template-columns:34px 1fr 62px 48px 96px 96px 48px 104px">
+            <span class="chk on" style="width:11px;height:11px"></span>
+            <span class="tw-c"><span class="ico"></span><span class="cell-line" style="width:85%"></span></span>
+            <span class="kv">2.4M</span><span class="kv">文本</span><span class="tagx" style="border-color:#9db99a;color:#4d7a4a">处理成功</span>
+            <span class="kv">09-11 10:20</span><span class="tog on"></span>
+            <span class="fx" style="gap:6px"><span class="kv" style="color:var(--accent)">问答 →P8</span><span class="kv" style="color:var(--dan)">删除</span></span>
+          </div>
+          <div class="tw-r" style="grid-template-columns:34px 1fr 62px 48px 96px 96px 48px 104px">
+            <span class="chk" style="width:11px;height:11px"></span>
+            <span class="tw-c"><span class="ico"></span><span class="cell-line" style="width:70%"></span></span>
+            <span class="kv">1.1M</span><span class="kv">文本</span><span class="tagx" style="border-color:#d8b48a;color:#9a6b2f">处理中</span>
+            <span class="kv">09-11 10:18</span><span class="tog"></span><span class="kv">— —</span>
+          </div>
+          <div class="tw-r" style="grid-template-columns:34px 1fr 62px 48px 96px 96px 48px 104px">
+            <span class="chk" style="width:11px;height:11px"></span>
+            <span class="tw-c"><span class="ico"></span><span class="cell-line" style="width:60%"></span></span>
+            <span class="kv">3.8M</span><span class="kv">文本</span><span class="tagx" style="border-color:#d3a3a3;color:var(--dan)" title="未检测到文本层">处理失败</span>
+            <span class="kv">09-11 09:50</span><span class="tog"></span><span class="kv" style="color:var(--accent)">重新上传</span>
+          </div>
+          <div class="tw-r" style="justify-content:center;color:var(--ink3);font-size:10.5px">空态：未找到匹配文档，可点击“添加文档”上传 PDF</div>
+        </div>
+      </div>
+    </div>
+  </div>
+  <div class="note" style="margin-top:10px">表头支持全选、按创建时间升 / 降序；“启用”开关即时保存；删除 / 批量删除均弹 M10 二次确认。</div>
+</div>
+
+<!-- ===== P8 文档问答 ===== -->
+<div class="screen" id="p8">
+  <div class="screen-head">
+    <span class="pid">P8</span><h3>文档问答（基于原文检索）</h3><span class="rt">#/doc-qa?id=</span>
+    <span class="ds">左侧原文预览，右侧问答栏；答案由所选文档原文生成，可选用已发布智体的回答风格。</span>
+  </div>
+  <div class="win" style="min-height:540px">
+    <div class="sb">
+      <div class="sb-brand"><span class="sb-logo">影</span><span class="t"><i></i><i></i></span></div>
+      <div class="sb-gl">工作台</div>
+      <div class="sb-it on"><span class="sq"></span><span class="wl" style="background:#eef1f8"></span></div>
+      <div class="sb-it"><span class="sq"></span><span class="wl"></span></div>
+      <div class="sb-it"><span class="sq"></span><span class="wl"></span></div>
+      <div class="sb-gl">资源</div>
+      <div class="sb-it"><span class="sq"></span><span class="wl"></span></div>
+      <div class="sb-it"><span class="sq"></span><span class="wl"></span></div>
+      <div class="sb-foot">企业智能创作平台 · v0.2</div>
+    </div>
+    <div class="col">
+      <div class="tb"><span class="tt">文档问答</span><span class="cb">探文智述 / 文档问答</span>
+        <span class="r"><span class="btnx">← 返回文档管理</span></span></div>
+      <div style="flex:1;display:grid;grid-template-columns:1fr 262px;min-height:0">
+        <!-- 左原文 -->
+        <div style="overflow:hidden;border-right:1px solid var(--line);background:#fff;padding:14px 18px;display:flex;flex-direction:column;gap:7px">
+          <b style="font-size:14px">文档标题（文件名）</b>
+          <span class="kv">文档大小 2.4M · 正文 8,642 字 · 创建于 09-11 10:20</span>
+          <div style="height:8px"></div>
+          <b style="font-size:12px">一、章节小标题</b>
+          <div class="ln w100"></div><div class="ln w95"></div><div class="ln w88"></div>
+          <b style="font-size:12px;margin-top:4px">二、章节小标题</b>
+          <div class="ln w100"></div><div class="ln w92"></div><div class="ln w70"></div>
+          <div class="b" style="margin-top:auto;font-size:10px">空态 1：请点击“选择文档”加载；空态 2：该文档缺少可识别文本，请重新上传电子版 PDF。</div>
+        </div>
+        <!-- 右问答栏 -->
+        <div style="background:#fff;display:flex;flex-direction:column;min-width:0">
+          <div class="fx" style="padding:9px 11px;border-bottom:1px solid var(--line2);gap:7px">
+            <span class="btnx pri" style="flex:1;justify-content:center;padding:6px">选择文档（弹 M7）</span>
+            <span class="btnx" style="padding:6px 9px">清空</span>
+          </div>
+          <div class="kv" style="padding:7px 12px;border-bottom:1px solid var(--line2)">当前文档：xxxxxxx.pdf</div>
+          <div style="padding:9px 12px"><div class="kv" style="margin-bottom:4px">回答风格（智体）</div><div class="inx">通用检索问答 ▾</div></div>
+          <div style="flex:1;padding:10px 12px;display:flex;flex-direction:column;gap:9px;overflow:hidden;background:var(--canvas)">
+            <div class="cardx" style="padding:7px 9px"><div class="kv" style="margin-bottom:3px">Q：这份文件的总体要求是什么？</div></div>
+            <div class="cardx" style="padding:7px 9px"><div class="kv" style="margin-bottom:4px">AI 依据文档回答</div><div class="ln w95"></div><div class="ln w85"></div><div class="ln w60"></div><span class="btnx" style="margin-top:5px;font-size:10px;padding:2px 8px">复制</span></div>
+          </div>
+          <div style="padding:10px 12px;border-top:1px solid var(--line)">
+            <div class="tax" style="min-height:48px;margin-bottom:6px">输入你的问题（Shift+Enter 换行）</div>
+            <div class="fx"><span class="sp"></span><span class="btnx pri">发送</span></div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- ===== P9 AI 文档 ===== -->
+<div class="screen" id="p9">
+  <div class="screen-head">
+    <span class="pid">P9</span><h3>AI 文档（智能解析与结构化整理）</h3><span class="rt">#/ai-doc</span>
+    <span class="ds">左侧粘贴 / 导入原文，右侧一键产出报告、摘要、大纲、要点、关键词五类结果。</span>
+  </div>
+  <div class="win" style="min-height:540px">
+    <div class="sb">
+      <div class="sb-brand"><span class="sb-logo">影</span><span class="t"><i></i><i></i></span></div>
+      <div class="sb-gl">工作台</div>
+      <div class="sb-it"><span class="sq"></span><span class="wl"></span></div>
+      <div class="sb-it"><span class="sq"></span><span class="wl"></span></div>
+      <div class="sb-it"><span class="sq"></span><span class="wl"></span></div>
+      <div class="sb-gl">资源</div>
+      <div class="sb-it on"><span class="sq"></span><span class="wl" style="background:#eef1f8"></span></div>
+      <div class="sb-it"><span class="sq"></span><span class="wl"></span></div>
+      <div class="sb-foot">企业智能创作平台 · v0.2</div>
+    </div>
+    <div class="col">
+      <div class="tb"><span class="tt">AI 文档</span><span class="cb">文档智能解析与结构化整理</span>
+        <span class="r"><span class="btnx"><span class="ico"></span>导入文件</span><span class="btnx"><span class="ico"></span>从写作区导入</span></span></div>
+      <div style="flex:1;display:grid;grid-template-columns:minmax(0,1fr) minmax(0,1.05fr);gap:0;min-height:0">
+        <!-- 左输入 -->
+        <div class="canvas" style="border-right:1px solid var(--line)">
+          <div class="cardx fcol" style="gap:9px;flex:1">
+            <div class="fx"><b style="font-size:12.5px">原始文档</b><span class="sp"></span><span class="btnx">载入示例文档</span></div>
+            <div class="tax" style="flex:1;min-height:230px">将需要分析的文档全文粘贴到此处；也可导入 TXT / Markdown / PDF（带文本层，≤30M）……</div>
+            <div class="fx"><span class="kv">0 字</span><span class="sp"></span><span class="btnx">清空</span></div>
+            <div class="g2">
+              <span class="btnx pri" style="justify-content:center;padding:8px">一键智能分析</span>
+              <span class="btnx" style="justify-content:center;padding:8px">仅生成摘要</span>
+            </div>
+          </div>
+        </div>
+        <!-- 右结果 -->
+        <div style="background:#fff;display:flex;flex-direction:column;min-width:0">
+          <div style="display:flex;gap:2px;padding:7px 9px;border-bottom:1px solid var(--line);flex-wrap:wrap">
+            <span class="pillx on" style="font-size:10px;padding:2px 8px">分析报告</span>
+            <span class="pillx" style="font-size:10px;padding:2px 8px">内容摘要</span>
+            <span class="pillx" style="font-size:10px;padding:2px 8px">结构大纲</span>
+            <span class="pillx" style="font-size:10px;padding:2px 8px">要点清单</span>
+            <span class="pillx" style="font-size:10px;padding:2px 8px">关键词</span>
+          </div>
+          <div style="flex:1;padding:11px 12px;overflow:hidden;display:flex;flex-direction:column;gap:9px;background:var(--canvas)">
+            <div class="fx" style="gap:6px"><span class="btnx" style="font-size:10px">复制结果</span><span class="btnx" style="font-size:10px">下载 TXT</span><span class="btnx" style="font-size:10px">结果导入写作区 →</span></div>
+            <div class="g4">
+              <div class="cardx" style="text-align:center;padding:8px 4px"><b style="font-size:14px">0</b><div class="kv">总字数</div></div>
+              <div class="cardx" style="text-align:center;padding:8px 4px"><b style="font-size:14px">0</b><div class="kv">句子数</div></div>
+              <div class="cardx" style="text-align:center;padding:8px 4px"><b style="font-size:14px">0</b><div class="kv">段落数</div></div>
+              <div class="cardx" style="text-align:center;padding:8px 4px"><b style="font-size:14px">0</b><div class="kv">平均句长</div></div>
+            </div>
+            <b style="font-size:11.5px">内容摘要</b><div class="cardx"><div class="ln w95"></div><div class="ln w80"></div></div>
+            <b style="font-size:11.5px">结构大纲</b>
+            <div class="cardx fcol" style="gap:5px;padding:8px 11px"><div class="fx" style="gap:7px"><b class="kv">1.</b><span class="ln w75" style="margin:0"></span></div><div class="fx" style="gap:7px"><b class="kv">2.</b><span class="ln w65" style="margin:0"></span></div><div class="fx" style="gap:7px"><b class="kv">3.</b><span class="ln w80" style="margin:0"></span></div></div>
+            <b style="font-size:11.5px">核心关键词</b>
+            <div class="fx" style="gap:6px;flex-wrap:wrap"><span class="tagx">关键词</span><span class="tagx">关键词</span><span class="tagx">关键词</span><span class="tagx">关键词</span><span class="tagx">关键词</span></div>
+            <div class="b" style="font-size:10px">未分析时空态：分析结果将展示在这里（支持一键生成摘要、大纲、要点与关键词）。</div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- ===== P10 公文范文库 ===== -->
+<div class="screen" id="p10">
+  <div class="screen-head">
+    <span class="pid">P10</span><h3>公文范文库</h3><span class="rt">#/templates</span>
+    <span class="ds">按分类筛选 + 关键词搜索，卡片浏览规范范文，可在线阅读或一键载入写作台。</span>
+  </div>
+  <div class="win" style="min-height:520px">
+    <div class="sb">
+      <div class="sb-brand"><span class="sb-logo">影</span><span class="t"><i></i><i></i></span></div>
+      <div class="sb-gl">工作台</div>
+      <div class="sb-it"><span class="sq"></span><span class="wl"></span></div>
+      <div class="sb-it"><span class="sq"></span><span class="wl"></span></div>
+      <div class="sb-it"><span class="sq"></span><span class="wl"></span></div>
+      <div class="sb-gl">资源</div>
+      <div class="sb-it"><span class="sq"></span><span class="wl"></span></div>
+      <div class="sb-it on"><span class="sq"></span><span class="wl" style="background:#eef1f8"></span></div>
+      <div class="sb-foot">企业智能创作平台 · v0.2</div>
+    </div>
+    <div class="col">
+      <div class="tb"><span class="tt">公文范文</span><span class="cb">规范范文浏览与一键套用</span></div>
+      <div class="canvas">
+        <div class="b" style="border-style:solid;border-color:#cdd8ef;background:#f2f5fd;color:#5a6b91">信息条：范文按党政公文规范结构组织，可在线阅读完整正文，支持一键载入 AI 写作编辑器继续修改、导出。</div>
+        <div class="fx" style="gap:6px;flex-wrap:wrap">
+          <span class="pillx on">全部</span><span class="pillx">汇报报告</span><span class="pillx">计划方案</span><span class="pillx">总结考核</span><span class="pillx">讲话演讲</span><span class="pillx">宣传党建</span>
+          <span class="sp"></span>
+          <div class="inx" style="width:220px"><span class="ico"></span>搜索范文标题或关键词</div>
+        </div>
+        <div class="g3" style="flex:1;align-content:start">
+          <div class="cardx fcol" style="gap:6px">
+            <div class="fx"><span class="tagx dark">分类</span><span class="sp"></span><span class="kv">文种</span></div>
+            <b style="font-size:12px">范文标题名称</b>
+            <div class="ln w90"></div><div class="ln w65"></div>
+            <div class="fx" style="gap:5px;flex-wrap:wrap"><span class="kv"># 关键词</span><span class="kv"># 关键词</span></div>
+            <div class="g2" style="margin-top:2px"><span class="btnx pri" style="justify-content:center;font-size:10.5px">查看范文（M8）</span><span class="btnx" style="justify-content:center;font-size:10.5px">直接套用 →</span></div>
+          </div>
+          <div class="cardx fcol" style="gap:6px">
+            <div class="fx"><span class="tagx dark">分类</span><span class="sp"></span><span class="kv">文种</span></div>
+            <b style="font-size:12px">范文标题名称</b>
+            <div class="ln w85"></div><div class="ln w60"></div>
+            <div class="fx" style="gap:5px;flex-wrap:wrap"><span class="kv"># 关键词</span><span class="kv"># 关键词</span></div>
+            <div class="g2" style="margin-top:2px"><span class="btnx pri" style="justify-content:center;font-size:10.5px">查看范文</span><span class="btnx" style="justify-content:center;font-size:10.5px">直接套用 →</span></div>
+          </div>
+          <div class="cardx fcol" style="gap:6px">
+            <div class="fx"><span class="tagx dark">分类</span><span class="sp"></span><span class="kv">文种</span></div>
+            <b style="font-size:12px">范文标题名称</b>
+            <div class="ln w90"></div><div class="ln w70"></div>
+            <div class="fx" style="gap:5px;flex-wrap:wrap"><span class="kv"># 关键词</span><span class="kv"># 关键词</span></div>
+            <div class="g2" style="margin-top:2px"><span class="btnx pri" style="justify-content:center;font-size:10.5px">查看范文</span><span class="btnx" style="justify-content:center;font-size:10.5px">直接套用 →</span></div>
+          </div>
+        </div>
+        <div class="b" style="text-align:center;font-size:10.5px">空态：未找到匹配范文。“直接套用 / 一键套用”会把范文全文载入 P2 写作编辑器。</div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- ================= B. 弹层与状态 ================= -->
+<div class="part-title"><span class="n">B</span><h2>弹层 / 浮层 / 特殊状态（11 个）</h2><span class="d">灰底遮罩 + 居中白卡；均为模态，Esc / 点遮罩可关闭</span></div>
+
+<!-- M1 -->
+<div class="screen" id="m1">
+  <div class="screen-head"><span class="pid">M1</span><h3>创建 / 编辑智体</h3><span class="rt">openCreateAgent · 宽 560</span>
+    <span class="ds">由 P1“创建智体”或 P3 头部“编辑”唤起；编辑态标题与按钮文案变化。</span></div>
+  <div class="modal-stage">
+    <div class="mcard">
+      <div class="mhead">创建智体<span class="x"></span></div>
+      <div class="mbody">
+        <div class="fcol" style="gap:5px"><div class="fx"><b style="font-size:11.5px">智体名称 <span style="color:var(--dan)">*</span></b><span class="sp"></span><span class="kv">0/50</span></div><div class="inx">给智体起一个独一无二的名字</div></div>
+        <div class="fcol" style="gap:5px"><div class="fx"><b style="font-size:11.5px">功能介绍</b><span class="sp"></span><span class="kv">0/2000</span></div><div class="tax" style="min-height:54px">介绍智体的功能，将会展示给智体的用户</div></div>
+        <div class="fcol" style="gap:6px">
+          <div class="fx"><b style="font-size:11.5px">图标 <span style="color:var(--dan)">*</span></b><span class="btnx" style="font-size:10px"><span class="ico"></span>生成（AI 按名称生成）</span></div>
+          <div class="note" style="font-size:10px">最多生成 5 张，新生成自动选中；点击可切换</div>
+          <div class="fx" style="gap:8px">
+            <span class="avatar" style="width:46px;height:46px;border-radius:11px;border:2px solid var(--pri)">名</span>
+            <span class="avatar" style="width:46px;height:46px;border-radius:11px">名</span>
+            <span class="avatar" style="width:46px;height:46px;border-radius:11px">名</span>
+            <span class="b" style="width:46px;height:46px;border-radius:11px;display:flex;align-items:center;justify-content:center;font-size:9px">空位</span>
+          </div>
+        </div>
+      </div>
+      <div class="mfoot"><span class="btnx">取消</span><span class="btnx pri">确定创建</span></div>
+    </div>
+  </div>
+</div>
+
+<!-- M2 -->
+<div class="screen" id="m2">
+  <div class="screen-head"><span class="pid">M2</span><h3>提示词优化</h3><span class="rt">openOptimize · 宽 680</span>
+    <span class="ds">由 P3“优化”唤起，进入即流式生成优化后的人设文本。</span></div>
+  <div class="modal-stage">
+    <div class="mcard">
+      <div class="mhead">提示词优化<span class="x"></span></div>
+      <div class="mbody">
+        <div class="fx"><span class="sp"></span><span class="btnx"><span class="ico"></span>重试</span></div>
+        <div class="tax" style="min-height:170px;font-family:ui-monospace,monospace;font-size:10.5px;line-height:1.7">优化后的提示词逐字流式输出在此（等宽字体、可二次编辑）……<br><br># 角色设定<br># 核心能力<br># 工作流程 ……</div>
+      </div>
+      <div class="mfoot"><span class="btnx">取消</span><span class="btnx pri">使用（回填到人设框）</span></div>
+    </div>
+  </div>
+</div>
+
+<!-- M3 -->
+<div class="screen" id="m3">
+  <div class="screen-head"><span class="pid">M3</span><h3>AI 步骤写作向导（3 步）</h3><span class="rt">openStepWizard · 宽 640</span>
+    <span class="ds">Step1 / Step2 为弹窗，Step3 关闭弹窗并在 P2 右侧面板流式生成正文。</span></div>
+  <div class="modal-stage">
+    <div class="mcard" style="max-width:760px">
+      <div class="mhead">AI 步骤写作<span class="x"></span></div>
+      <div class="mbody">
+        <div class="stepperx">
+          <div class="stp done"><span class="dot">✓</span>基础信息</div><span class="stline done"></span>
+          <div class="stp cur"><span class="dot">2</span>摘要信息</div><span class="stline"></span>
+          <div class="stp"><span class="dot">3</span>开始写作</div>
+        </div>
+        <div class="g3" style="align-items:start">
+          <div class="bs fcol" style="gap:6px">
+            <b style="font-size:11px">Step 1 基础信息</b>
+            <div class="inx" style="font-size:10px">稿件分类 ▾</div>
+            <div class="inx" style="font-size:10px">稿件类型 ▾</div>
+            <div class="inx" style="font-size:10px">写作场景 ▾</div>
+            <div class="inx" style="font-size:10px">稿件标题 *</div>
+            <div class="fx" style="gap:5px"><span class="pillx" style="font-size:9px">短</span><span class="pillx on" style="font-size:9px">中</span><span class="pillx" style="font-size:9px">长</span></div>
+            <div class="inx" style="font-size:10px">关键词 *　0/100</div>
+            <div class="fx" style="gap:4px;flex-wrap:wrap"><span class="tagx" style="font-size:9px">推荐词</span><span class="tagx" style="font-size:9px">推荐词</span></div>
+            <div class="fx" style="gap:6px"><span class="chk on"></span><b style="font-size:10.5px">补充信息</b></div>
+            <div class="tax" style="min-height:34px;font-size:10px">按场景动态出现的补充项</div>
+            <span class="btnx pri" style="justify-content:center;font-size:10.5px">下一步（必填齐才可点）</span>
+          </div>
+          <div class="bs fcol" style="gap:6px">
+            <b style="font-size:11px">Step 2 摘要信息</b>
+            <div class="note" style="font-size:10px">进入时半透明遮罩 + 转圈“正在生成摘要”</div>
+            <div class="tax" style="min-height:118px;font-size:10px">AI 据 Step1 生成的摘要，可二次编辑，最多 300 字……</div>
+            <div class="fx"><span class="kv">0/300</span></div>
+            <div class="fx"><span class="btnx" style="font-size:10.5px">← 返回 1</span><span class="sp"></span><span class="btnx pri" style="font-size:10.5px">开始写作</span></div>
+          </div>
+          <div class="bs fcol" style="gap:6px;background:var(--fill2)">
+            <b style="font-size:11px">Step 3 开始写作（在 P2 右侧面板）</b>
+            <div class="b" style="font-size:10px;min-height:118px">正文逐字流式生成区</div>
+            <span class="btnx dan" style="justify-content:center;font-size:10.5px">■ 放弃生成</span>
+            <div class="g2"><span class="btnx" style="font-size:10px">返回 1</span><span class="btnx" style="font-size:10px">返回 2</span></div>
+            <span class="btnx pri" style="justify-content:center;font-size:10.5px">重新生成</span>
+            <div class="note" style="font-size:9.5px">完成后自动写入左侧编辑区并存入历史记录</div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- M4 -->
+<div class="screen" id="m4">
+  <div class="screen-head"><span class="pid">M4</span><h3>导出文档</h3><span class="rt">openExportMenu · 宽 420</span>
+    <span class="ds">由 P2 工具条“导出”唤起，编辑区为空时拦截并提示。</span></div>
+  <div class="modal-stage">
+    <div class="mcard" style="max-width:440px">
+      <div class="mhead">导出文档<span class="x"></span></div>
+      <div class="mbody">
+        <div class="g2" style="gap:9px">
+          <div class="bs fx" style="gap:8px"><span class="avatar" style="width:30px;height:30px"><span class="ico"></span></span><div><b style="font-size:11px">复制全文</b><div class="kv">纯文本到剪贴板</div></div></div>
+          <div class="bs fx" style="gap:8px"><span class="avatar" style="width:30px;height:30px"><span class="ico"></span></span><div><b style="font-size:11px">下载 TXT</b><div class="kv">任意编辑器可开</div></div></div>
+          <div class="bs fx" style="gap:8px"><span class="avatar" style="width:30px;height:30px"><span class="ico"></span></span><div><b style="font-size:11px">下载 Word</b><div class="kv">.doc，Word/WPS 可开</div></div></div>
+          <div class="bs fx" style="gap:8px"><span class="avatar" style="width:30px;height:30px"><span class="ico"></span></span><div><b style="font-size:11px">下载 HTML</b><div class="kv">保留排版网页文件</div></div></div>
+          <div class="bs fx" style="gap:8px;grid-column:1/-1"><span class="avatar" style="width:30px;height:30px"><span class="ico"></span></span><div><b style="font-size:11px">打印 / 另存 PDF</b><div class="kv">调用浏览器打印，可另存为 PDF</div></div></div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- M5 -->
+<div class="screen" id="m5">
+  <div class="screen-head"><span class="pid">M5</span><h3>勾选校对规则</h3><span class="rt">openRuleDialog · 宽 560</span>
+    <span class="ds">由 P2“AI 校对”页签唤起，按规则组配置本次校对项。</span></div>
+  <div class="modal-stage">
+    <div class="mcard">
+      <div class="mhead">勾选校对规则<span class="x"></span></div>
+      <div class="mbody">
+        <div class="bs fcol" style="gap:7px">
+          <div class="fx" style="gap:7px"><span class="chk on"></span><b style="font-size:11.5px">规则组一（组级全选）</b></div>
+          <div class="fx" style="gap:14px;padding-left:20px;flex-wrap:wrap">
+            <span class="fx" style="gap:5px;font-size:11px"><span class="chk on"></span>错别字</span>
+            <span class="fx" style="gap:5px;font-size:11px"><span class="chk on"></span>标点规范</span>
+            <span class="fx" style="gap:5px;font-size:11px"><span class="chk on"></span>语法语病</span>
+          </div>
+        </div>
+        <div class="bs fcol" style="gap:7px">
+          <div class="fx" style="gap:7px"><span class="chk on"></span><b style="font-size:11.5px">规则组二</b></div>
+          <div class="fx" style="gap:14px;padding-left:20px;flex-wrap:wrap">
+            <span class="fx" style="gap:5px;font-size:11px"><span class="chk on"></span>公文表述</span>
+            <span class="fx" style="gap:5px;font-size:11px"><span class="chk" style="opacity:.5"></span>固定规则（不可取消）</span>
+          </div>
+        </div>
+      </div>
+      <div class="mfoot"><span class="btnx">恢复默认</span><span class="btnx pri">确定</span></div>
+    </div>
+  </div>
+</div>
+
+<!-- M6 -->
+<div class="screen" id="m6">
+  <div class="screen-head"><span class="pid">M6</span><h3>添加文档（上传并本地解析 PDF）</h3><span class="rt">openAddDoc · 宽 600</span>
+    <span class="ds">由 P7“添加文档 / 重新上传”唤起，可多选；解析在本地完成，不上传服务器。</span></div>
+  <div class="modal-stage">
+    <div class="mcard" style="max-width:600px">
+      <div class="mhead">添加文档<span class="x"></span></div>
+      <div class="mbody">
+        <div class="b" style="border-style:solid;border-color:#d3a3a3;background:#fbf1f1;color:#8a5a5a;font-size:10.5px">支持带文本层 PDF，单个 ≤30M；扫描件（纯图片）无法识别文字。</div>
+        <div style="border:1.5px dashed #9aa6bc;border-radius:9px;padding:20px;text-align:center;color:var(--ink3);font-size:11px;background:var(--fill2)">
+          <div class="ico" style="width:22px;height:22px;margin:0 auto 7px"></div>
+          点击选择本地 PDF 文件（可多选，不超过 30M）
+        </div>
+        <div class="fcol" style="gap:6px">
+          <div class="fx cardx" style="padding:6px 9px;gap:8px"><span class="ico"></span><span class="cell-line" style="flex:1"></span><span class="kv">2.4M</span><span class="tagx" style="border-color:#9db99a;color:#4d7a4a">解析成功 8642 字</span><span class="ico"></span></div>
+          <div class="fx cardx" style="padding:6px 9px;gap:8px"><span class="ico"></span><span class="cell-line" style="flex:1"></span><span class="kv">1.1M</span><span class="tagx" style="border-color:#d8b48a;color:#9a6b2f">解析中</span><span class="ico"></span></div>
+          <div class="fx cardx" style="padding:6px 9px;gap:8px"><span class="ico"></span><span class="cell-line" style="flex:1"></span><span class="kv">3.8M</span><span class="tagx" style="border-color:#d3a3a3;color:var(--dan)">无法识别文字</span><span class="ico"></span></div>
+        </div>
+      </div>
+      <div class="mfoot"><span class="btnx">取消</span><span class="btnx pri">确定添加（仅入库解析成功项）</span></div>
+    </div>
+  </div>
+</div>
+
+<!-- M7 -->
+<div class="screen" id="m7">
+  <div class="screen-head"><span class="pid">M7</span><h3>选择文档（文档问答内）</h3><span class="rt">openDocList · 宽 700</span>
+    <span class="ds">由 P8“选择文档”唤起，单选一篇处理成功的文档。</span></div>
+  <div class="modal-stage">
+    <div class="mcard" style="max-width:660px">
+      <div class="mhead">文档列表<span class="x"></span></div>
+      <div class="mbody">
+        <div class="inx"><span class="ico"></span>搜索文件名或文件内容</div>
+        <div class="tw">
+          <div class="tw-h" style="grid-template-columns:40px 1fr 70px 80px 130px"><span></span><span>文件名称</span><span>大小</span><span>正文字数</span><span>创建时间</span></div>
+          <div class="tw-r" style="grid-template-columns:40px 1fr 70px 80px 130px"><span class="rad on"></span><span class="cell-line" style="width:88%"></span><span class="kv">2.4M</span><span class="kv">8642 字</span><span class="kv">09-11</span></div>
+          <div class="tw-r" style="grid-template-columns:40px 1fr 70px 80px 130px"><span class="rad"></span><span class="cell-line" style="width:70%"></span><span class="kv">1.8M</span><span class="kv">5310 字</span><span class="kv">09-10</span></div>
+        </div>
+      </div>
+      <div class="mfoot"><span class="btnx">取消</span><span class="btnx pri">确定</span></div>
+    </div>
+  </div>
+</div>
+
+<!-- M8 -->
+<div class="screen" id="m8">
+  <div class="screen-head"><span class="pid">M8</span><h3>范文详情阅读</h3><span class="rt">openTplDetail · 宽 760</span>
+    <span class="ds">由 P10“查看范文”唤起，先加载再流式渲染规范结构正文。</span></div>
+  <div class="modal-stage">
+    <div class="mcard" style="max-width:720px">
+      <div class="mhead">范文标题名称<span class="x"></span></div>
+      <div class="mbody">
+        <div class="fx" style="gap:8px"><span class="tagx dark">分类</span><span class="kv">一句话简介</span><span class="sp"></span><span class="kv">加载中三点动画</span></div>
+        <div class="bs" style="max-height:230px;overflow:hidden;display:flex;flex-direction:column;gap:6px">
+          <b style="font-size:13px;text-align:center">范文标题</b>
+          <b style="font-size:11.5px">一、一级小标题</b>
+          <div class="ln w100"></div><div class="ln w96"></div><div class="ln w90"></div>
+          <b style="font-size:11.5px">二、一级小标题</b>
+          <div class="ln w100"></div><div class="ln w88"></div><div class="ln w72"></div>
+        </div>
+      </div>
+      <div class="mfoot"><span class="btnx">复制全文</span><span class="btnx">下载</span><span class="sp" style="flex:1"></span><span class="btnx pri">一键套用至写作 →P2</span></div>
+    </div>
+  </div>
+</div>
+
+<!-- M9 M10 M11 -->
+<div class="screen" id="m9">
+  <div class="screen-head"><span class="pid">M9–M11</span><h3>小弹层与全局轻提示</h3><span class="rt">重命名 / 危险确认 / Toast</span>
+    <span class="ds">高频小弹层统一示意；Toast 为非模态顶部轻提示，1.6s 自动消失。</span></div>
+  <div class="g3" style="align-items:start">
+    <!-- M9 -->
+    <div class="modal-stage" style="padding:16px 12px">
+      <div class="mcard">
+        <div class="mhead" style="font-size:12px">重命名对话<span class="x"></span></div>
+        <div class="mbody"><div class="fcol" style="gap:5px"><b style="font-size:11px">对话名称</b><div class="inx">请输入新的对话名称（≤30）</div></div></div>
+        <div class="mfoot"><span class="btnx">取消</span><span class="btnx pri">保存</span></div>
+      </div>
+    </div>
+    <!-- M10 -->
+    <div class="modal-stage" style="padding:16px 12px">
+      <div class="mcard">
+        <div class="mhead" style="font-size:12px">删除确认</div>
+        <div class="mbody">
+          <div class="fx" style="gap:9px;align-items:flex-start">
+            <span style="width:26px;height:26px;border-radius:50%;border:1.5px solid var(--dan);color:var(--dan);display:flex;align-items:center;justify-content:center;flex:none;font-weight:700">!</span>
+            <div class="fcol" style="gap:4px"><b style="font-size:11.5px">确定删除“xxx”吗？</b><div class="note" style="font-size:10px">删除后数据不可恢复 / 将同时清除相关历史记录。</div></div>
+          </div>
+        </div>
+        <div class="mfoot"><span class="btnx">取消</span><span class="btnx dan">删除</span></div>
+      </div>
+    </div>
+    <!-- M11 -->
+    <div style="border:1.5px dashed #aab4c6;border-radius:10px;background:#dde2ec;padding:22px 12px;display:flex;flex-direction:column;align-items:center;gap:14px;min-height:190px;justify-content:center">
+      <div class="kv" style="font-size:10.5px">页面顶部居中浮出（非模态，不阻断操作）</div>
+      <div style="background:#2b3342;color:#fff;border-radius:8px;padding:8px 16px;font-size:11px;display:flex;gap:8px;align-items:center"><span class="ico" style="border-color:#fff"></span>操作成功 / 警告 / 错误 文案</div>
+      <div class="kv" style="font-size:10px">约 1.6 秒后自动消失</div>
+    </div>
+  </div>
+</div>
+
+<div class="foot-note">
+  影源 · 企业智能创作平台 — 全页面线框原型（依据现有应用真实代码还原）<br>
+  共 10 个路由页面（P1–P10）与 11 个弹层 / 状态（M1–M11）；本稿仅表达结构与交互关系，非最终视觉稿。全程无 emoji，图标位置以方框占位（实际为线性 SVG 图标）。
+</div>
+</div>
+<a class="toplink" href="#legend">返回目录</a>
+</body>
+</html>
